@@ -70,7 +70,7 @@ export default function Projects() {
                                 // Photo Journalist Layout - Split with dark sidebar and content area
                                 <div className="flex flex-col md:flex-row min-h-[600px] md:min-h-[700px]">
                                     {/* Content Area - Shows first on mobile */}
-                                    <div className="w-full md:w-2/3 bg-[#f5f1e8] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
+                                    <div className="w-full md:w-2/3 p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
                                         <div className="space-y-6">
                                             {/* Main Headline */}
                                             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tight leading-tight text-gray-900">
@@ -120,7 +120,7 @@ export default function Projects() {
                                     </div>
 
                                     {/* Images Sidebar - Shows after content on mobile */}
-                                    <div className="w-full md:w-1/3 bg-[#f5f1e8] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
+                                    <div className="w-full md:w-1/3 flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
                                         {/* Stacked Images */}
                                         <div className="flex-1 flex flex-col gap-1">
                                             {project.images.map((img, idx) => (
@@ -160,7 +160,7 @@ export default function Projects() {
                                 </div>
                             ) : (
                                 // Video Journalist Layout - Text left, Video right
-                                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 min-h-[500px] bg-[#f5f1e8]">
+                                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 min-h-[500px]">
                                     {/* Left Content */}
                                     <div className="w-full lg:w-1/2 flex flex-col justify-center space-y-6 p-8 md:p-12 lg:p-16">
                                         {/* Main Heading */}
