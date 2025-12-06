@@ -88,11 +88,11 @@ export default function Awards() {
         <main className="min-h-screen bg-white text-black">
             {/* Header Section */}
             <section className="py-10 md:py-16 px-6 md:px-8">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-7xl mx-auto text-center">
                     <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase">
                         Awards & Recognition
                     </h1>
-                    <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl">
+                    <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
                         Honored for outstanding journalism and storytelling that brings critical stories to light
                     </p>
                 </div>
@@ -102,17 +102,17 @@ export default function Awards() {
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
                     {awards.map((award, index) => {
-                        const isEven = index % 2 === 1
-                        const imageLeft = !isEven
+                        // id 1 (index 0) = left, id 2 (index 1) = right, id 3 (index 2) = left, etc.
+                        const isLeft = index % 2 === 0
 
                         return (
                             <div key={award.id} className="w-full">
                                 {award.image && !award.videoUrl ? (
                                     // Image-based Award Layout - Alternating
-                                    <div className={`flex flex-col md:flex-row gap-8 lg:gap-12 ${imageLeft ? '' : 'md:flex-row-reverse'}`}>
+                                    <div className={`flex flex-col md:flex-row gap-8 lg:gap-12 ${isLeft ? '' : 'md:flex-row-reverse'}`}>
                                         {/* Image */}
                                         <div 
-                                            className="w-full md:w-1/2 relative aspect-video bg-[#f5f1e8] cursor-pointer group"
+                                            className="w-full md:w-2/5 relative aspect-video bg-[#fefbf5] cursor-pointer group rounded-lg overflow-hidden shadow-xl"
                                             onClick={() => openFullscreen(award.image)}
                                         >
                                             <Image
@@ -142,7 +142,7 @@ export default function Awards() {
                                         </div>
 
                                         {/* Content */}
-                                        <div className="w-full md:w-1/2 flex flex-col justify-center space-y-4">
+                                        <div className="w-full md:w-3/5 flex flex-col justify-center space-y-4">
                                             <div className="space-y-2">
                                                 <p className="text-base md:text-lg font-bold text-gray-900">
                                                     {award.year}, {award.award}
@@ -174,9 +174,9 @@ export default function Awards() {
                                     </div>
                                 ) : award.videoUrl ? (
                                     // Video-based Award Layout - Alternating
-                                    <div className={`flex flex-col lg:flex-row gap-8 lg:gap-12 bg-[#f5f1e8] p-8 md:p-12 lg:p-16 ${imageLeft ? '' : 'lg:flex-row-reverse'}`}>
+                                    <div className={`flex flex-col md:flex-row gap-8 lg:gap-12 ${isLeft ? 'md:flex-row-reverse' : ''}`}>
                                         {/* Content */}
-                                        <div className="w-full lg:w-1/2 flex flex-col justify-center space-y-4">
+                                        <div className="w-full md:w-3/5 flex flex-col justify-center space-y-4">
                                             <div className="space-y-2">
                                                 <p className="text-base md:text-lg font-bold text-gray-900">
                                                     {award.year}, {award.award}
@@ -199,7 +199,7 @@ export default function Awards() {
                                         </div>
 
                                         {/* Video Player */}
-                                        <div className="w-full lg:w-1/2 relative aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-xl">
+                                        <div className="w-full md:w-2/5 relative aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-xl">
                                             {playingVideo === award.id ? (
                                                 <iframe
                                                     width="100%"
@@ -266,7 +266,7 @@ export default function Awards() {
                                     </div>
                                 ) : (
                                     // Text-only Award Layout
-                                    <div className="bg-[#f5f1e8] p-8 md:p-12 lg:p-16">
+                                    <div className="bg-[#fefbf5] p-8 md:p-12 lg:p-16">
                                         <div className="space-y-4">
                                             <p className="text-base md:text-lg font-bold text-gray-900">
                                                 {award.year}, {award.award}
@@ -296,9 +296,9 @@ export default function Awards() {
             </section>
 
             {/* Recognition Section */}
-            <section className="pb-24 px-6 md:px-8 bg-[#f5f1e8] py-16">
+            <section className="pb-24 px-6 md:px-8 bg-[#fefbf5] py-16">
                 <div className="max-w-7xl mx-auto">
-                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-12 uppercase text-center">
+                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-15 uppercase text-center">
                         Recognition
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">

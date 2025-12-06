@@ -35,11 +35,11 @@ export default function Portraits() {
     <main className="min-h-screen bg-white text-black">
             {/* Header Section */}
             <section className="py-10 md:py-16 px-6 md:px-8">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-7xl mx-auto text-center">
                     <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase">
                         Portraits
                     </h1>
-                    <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl">
+                    <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
                         A collection of portrait work documenting lives affected by conflict and humanitarian challenges. These portraits capture the human stories at the heart of investigative journalism.
                     </p>
                 </div>

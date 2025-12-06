@@ -25,22 +25,22 @@ export default function Tearsheets() {
         setFullscreenImage(null)
     }
 
-    return (
-        <main className="min-h-screen bg-white text-black">
+  return (
+    <main className="min-h-screen bg-white text-black">
             {/* Header Section */}
-            <section className="py-10 md:py-16 px-4 md:px-6 bg-gradient-to-b from-white to-gray-50">
-                <div className="max-w-[1600px] mx-auto">
+            <section className="py-10 md:py-16 px-4 md:px-6 ">
+                <div className="max-w-[1600px] mx-auto text-center">
                     <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase">
                         Tearsheets
                     </h1>
-                    <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl">
+                    <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
                         Published work in leading international publications including National Geographic, The Guardian, BBC, Al Jazeera, and prestigious documentary film festivals showcasing investigative journalism and multimedia storytelling.
                     </p>
                 </div>
             </section>
 
             {/* Tearsheets Gallery - CSS Columns Masonry */}
-            <section className="py-12 md:py-16 px-4 md:px-6 bg-gray-50">
+            <section className="py-12 md:py-16 px-4 md:px-6 ">
                 <div className="max-w-[1600px] mx-auto">
                     <div className="columns-1 md:columns-2 gap-4 md:gap-6">
                         {tearsheets.map((tearsheet) => (
@@ -89,9 +89,9 @@ export default function Tearsheets() {
                                         <div className="absolute top-6 right-6 md:top-7 md:right-7">
                                             <div className="bg-black/80 backdrop-blur-sm text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-semibold uppercase tracking-wide shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
                                                 {tearsheet.publication}
-                                            </div>
-                                        </div>
-                                    )}
+          </div>
+        </div>
+      )}
 
                                     {/* Corner fold effect */}
                                     <div className="absolute top-3 right-3 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-gray-200 opacity-50" />
@@ -99,8 +99,8 @@ export default function Tearsheets() {
                             </div>
                         ))}
                     </div>
-                </div>
-            </section>
+        </div>
+      </section>
 
             {/* Fullscreen Image Modal */}
             {fullscreenImage && (
@@ -139,6 +139,6 @@ export default function Tearsheets() {
                     </div>
                 </div>
             )}
-        </main>
-    )
+    </main>
+  )
 }
