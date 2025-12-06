@@ -28,7 +28,7 @@ export default function Tearsheets() {
     return (
         <main className="min-h-screen bg-white text-black">
             {/* Header Section */}
-            <section className="py-7 md:py-16 px-4 md:px-6 bg-gradient-to-b from-white to-gray-50">
+            <section className="py-10 md:py-16 px-4 md:px-6 bg-gradient-to-b from-white to-gray-50">
                 <div className="max-w-[1600px] mx-auto">
                     <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase">
                         Tearsheets

@@ -36,7 +36,7 @@ export default function Navbar() {
             {/* Hamburger Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 focus:outline-none ml-auto"
+              className="md:hidden pr-2 focus:outline-none ml-auto"
               aria-label="Toggle menu"
             >
               <div className="w-7 h-6 flex flex-col justify-center gap-1.5">
@@ -89,7 +89,7 @@ export default function Navbar() {
               key={item.name}
               href={item.href}
               onClick={() => setIsOpen(false)}
-              className={`text-[13px] font-weight-400 text-gray-800 hover:text-gray-600 transition-all duration-300 ${
+              className={`text-[20px] font-weight-400 text-gray-800 hover:text-gray-600 transition-all duration-300 ${
                 isOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
               }`}
               style={{
