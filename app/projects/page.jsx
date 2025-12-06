@@ -61,6 +61,7 @@ export default function Projects() {
                 </div>
             </section>
 
+
             {/* Projects Grid */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
@@ -240,6 +241,73 @@ export default function Projects() {
                 </div>
             </section>
 
+            {/* Project Categories Navigation */}
+            <section className="py-12 md:py-16 px-6 md:px-8 bg-[#fefcf8]">
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+                        <Link href="/projects/photo-stories" className="group">
+                            <div className="relative aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden mb-4">
+                                <Image
+                                    src="/images/ps2.png"
+                                    alt="Photo Stories"
+                                    fill
+                                    className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <p className="text-sm font-semibold">Photo Stories</p>
+                                </div>
+                            </div>
+                            <p className="text-center text-sm md:text-base font-medium text-gray-900">Photo Stories</p>
+                        </Link>
+                        <Link href="/projects/films-documentaries" className="group">
+                            <div className="relative aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden mb-4">
+                                <Image
+                                    src="/images/fd.png"
+                                    alt="Films & Documentaries"
+                                    fill
+                                    className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <p className="text-sm font-semibold">Films & Documentaries</p>
+                                </div>
+                            </div>
+                            <p className="text-center text-sm md:text-base font-medium text-gray-900">Films & Documentaries</p>
+                        </Link>
+                        <Link href="/projects/print-digital-features" className="group">
+                            <div className="relative aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden mb-4">
+                                <Image
+                                    src="/images/pdf1.png"
+                                    alt="Print & Digital Features"
+                                    fill
+                                    className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <p className="text-sm font-semibold">Print & Digital Features</p>
+                                </div>
+                            </div>
+                            <p className="text-center text-sm md:text-base font-medium text-gray-900">Print & Digital Features</p>
+                        </Link>
+                        <Link href="/projects/global-assignments" className="group">
+                            <div className="relative aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden mb-4">
+                                <Image
+                                    src="/images/ga2.png"
+                                    alt="Global Assignments"
+                                    fill
+                                    className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <p className="text-sm font-semibold">Global Assignments</p>
+                                </div>
+                            </div>
+                            <p className="text-center text-sm md:text-base font-medium text-gray-900">Global Assignments</p>
+                        </Link>
+                    </div>
+                </div>
+            </section>
             {/* Fullscreen Image Modal */}
             {fullscreenImage && (
                 <div
