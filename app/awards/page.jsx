@@ -86,7 +86,7 @@ export default function Awards() {
                                                 src={award.image}
                                                 alt={award.title || award.award}
                                                 fill
-                                                className="object-cover"
+                                                className="object-contain"
                                             />
                                             {/* Fullscreen Icon on Hover */}
                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
