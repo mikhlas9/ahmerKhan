@@ -1,11 +1,29 @@
 "use client"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getProjects, PROJECT_CATEGORIES } from "@/lib/projects"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function PrintDigitalFeatures() {
     const [playingVideo, setPlayingVideo] = useState(null)
     const [fullscreenImage, setFullscreenImage] = useState(null)
+    const [features, setFeatures] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        async function fetchFeatures() {
+            try {
+                const data = await getProjects(PROJECT_CATEGORIES.PRINT_DIGITAL_FEATURES)
+                setFeatures(data)
+            } catch (error) {
+                console.error('Error loading features:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchFeatures()
+    }, [])
 
     const getYouTubeVideoId = (url) => {
         const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
@@ -20,38 +38,12 @@ export default function PrintDigitalFeatures() {
         setFullscreenImage(null)
     }
 
-    const features = [
-        {
-            id: 1,
-            title: "Muslims in India are Losing Their Rights and Homes",
-            role: "Photo Journalist",
-            network: "Vice News",
-            description: "ASSAM, India – Gayas-ud-din Ahmed thought his children would grow up in the same home that he was born and raised in. But in November, he was given a three-day eviction notice. Ahmed gave his son a hammer and told him to help with the deconstruction. They're moving parts of their house to set up a shelter at a temporary camp with thousands of other Muslims.",
-            image: "/images/pdf1.png",
-            readMoreLink: "https://www.vice.com/en/article/muslim-evictions-assam-india-citizenship-rights/",
-            type: "photo"
-        },
-        {
-            id: 2,
-            title: "Inside India's Covid Hell",
-            role: "Photographer",
-            network: "Vice News",
-            description: "India's crematoriums and hospitals can't keep up with a second wave of Covid-19 patients. Priests are working 24 hour days to perform last rites, people are buying medicine off the black market, and hospitals are running out of oxygen as India faces around 400,000 new cases, and more than 3,000 deaths a day.",
-            videoThumbnail: "https://img.youtube.com/vi/myb8GxLLpT0/maxresdefault.jpg",
-            videoUrl: "https://www.youtube.com/watch?v=myb8GxLLpT0",
-            type: "video"
-        },
-        {
-            id: 3,
-            title: "Health workers trek to remote areas to bring Covid-19 vaccines to Indian-administered Kashmir",
-            role: "Report",
-            network: "South China Morning Post",
-            description: "A massive vaccination drive is under way in India to protect as many people as possible from the coronavirus pandemic, which has crippled the country's healthcare system and left millions infected and hundreds of thousands dead. Despite being a leading manufacturer of a Covid-19 vaccine, vaccinating its own population has proved challenging, not least because of the difficulties reaching remote areas, including in places such as Indian-administered Kashmir. Health teams must spend an entire day travelling by several modes of transportation to reach nomadic populations that are often wary of the government. But the medical workers who embark on these vaccination missions believe it's the only way India can win its fight against Covid-19.",
-            videoThumbnail: "https://img.youtube.com/vi/nd9hxwnzxhs/maxresdefault.jpg",
-            videoUrl: "https://www.youtube.com/watch?v=nd9hxwnzxhs",
-            type: "video"
-        }
-    ]
+    if (loading) {
+        return <LoadingSpinner />
+    }
+
+    // Fallback to empty array if no data
+    const featuresList = features || []
 
     return (
         <main className="min-h-screen bg-white text-black">
@@ -70,7 +62,12 @@ export default function PrintDigitalFeatures() {
             {/* Features Grid */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
-                    {features.map((feature, index) => {
+                    {featuresList.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            No features found. Add projects from the admin panel.
+                        </div>
+                    ) : (
+                        featuresList.map((feature, index) => {
                         // id 1 (index 0) = left, id 2 (index 1) = right, id 3 (index 2) = left
                         const isLeft = index % 2 === 0
 
@@ -80,7 +77,7 @@ export default function PrintDigitalFeatures() {
                                     // Photo-based Feature Layout
                                     <div className={`flex flex-col md:flex-row min-h-[600px] md:min-h-[700px] ${isLeft ? '' : 'md:flex-row-reverse'}`}>
                                         {/* Content Area */}
-                                        <div className="w-full md:w-2/3 bg-[#fefcf8] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
+                                        <div className="w-full md:w-2/3 bg-[#fdfdfd] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
                                             <div className="space-y-6">
                                                 {/* Main Headline */}
                                                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tight leading-tight text-gray-900">
@@ -132,37 +129,46 @@ export default function PrintDigitalFeatures() {
                                         </div>
 
                                         {/* Image Sidebar */}
-                                        <div className="w-full md:w-1/3 bg-[#fefcf8] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
+                                        <div className="w-full md:w-1/3 bg-[#fdfdfd] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
                                             <div className="flex-1 flex flex-col gap-1">
-                                                <div
-                                                    className="relative flex-1 min-h-[200px] md:min-h-0 cursor-pointer group bg-gray-100 rounded-lg overflow-hidden"
-                                                    onClick={() => openFullscreen(feature.image)}
-                                                >
-                                                    <Image
-                                                        src={feature.image}
-                                                        alt={feature.title}
-                                                        fill
-                                                        className="object-contain"
-                                                    />
-                                                    {/* Fullscreen Icon on Hover */}
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                                        <div className="w-8 h-8 bg-white/80 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out">
-                                                            <svg
-                                                                className="w-4 h-4 text-gray-900"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={2}
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                                                />
-                                                            </svg>
+                                                {(feature.images && feature.images.length > 0) ? (
+                                                    feature.images.map((img, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className="relative flex-1 min-h-[200px] md:min-h-0 cursor-pointer group bg-gray-100 rounded-lg overflow-hidden"
+                                                            onClick={() => openFullscreen(img)}
+                                                        >
+                                                            <Image
+                                                                src={img}
+                                                                alt={`${feature.title} - Image ${idx + 1}`}
+                                                                fill
+                                                                className="object-contain"
+                                                            />
+                                                            {/* Fullscreen Icon on Hover */}
+                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                                <div className="w-8 h-8 bg-white/80 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out">
+                                                                    <svg
+                                                                        className="w-4 h-4 text-gray-900"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        viewBox="0 0 24 24"
+                                                                        strokeWidth={2}
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                                                        />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
                                                         </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="relative flex-1 min-h-[200px] md:min-h-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                        <span className="text-gray-400">No image</span>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -259,7 +265,7 @@ export default function PrintDigitalFeatures() {
                                 )}
                             </div>
                         )
-                    })}
+                    }))}
                 </div>
             </section>
 

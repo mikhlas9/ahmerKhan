@@ -1,44 +1,39 @@
 "use client"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getProjects, PROJECT_CATEGORIES } from "@/lib/projects"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function FilmsDocumentaries() {
     const [playingVideo, setPlayingVideo] = useState(null)
+    const [films, setFilms] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        async function fetchFilms() {
+            try {
+                const data = await getProjects(PROJECT_CATEGORIES.FILMS_DOCUMENTARIES)
+                setFilms(data)
+            } catch (error) {
+                console.error('Error loading films:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchFilms()
+    }, [])
 
     const getYouTubeVideoId = (url) => {
         const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
         return match ? match[1] : null
     }
 
-    const films = [
-        {
-            id: 1,
-            title: "Love Jihad in India's Uttar Pradesh",
-            role: "Film Maker & Report",
-            network: "TRT World",
-            description: "Why has love become a crime in India's largest state? Uttar Pradesh's Hindutva far-right government is using recently enacted anti-conversion laws to target interfaith unions.",
-            videoThumbnail: "https://img.youtube.com/vi/WXwcUK1-evo/maxresdefault.jpg",
-            videoUrl: "https://www.youtube.com/watch?v=WXwcUK1-evo"
-        },
-        {
-            id: 2,
-            title: "India Burning",
-            role: "Film Maker & Report",
-            network: "Vice News",
-            description: "India has been engulfed in riots after the world's biggest democracy suddenly stripped nearly two million people of their citizenship. As the nation's leaders ramp up Hindu nationalist rhetoric, a newly-enacted law has signaled to India's 200 million Muslims that they are the true target. This could mean that they end up in one of the brand-new detention camps quietly being constructed across the country.",
-            videoThumbnail: "https://img.youtube.com/vi/MCyBL8dBOEo/maxresdefault.jpg",
-            videoUrl: "https://www.youtube.com/watch?v=MCyBL8dBOEo"
-        },
-        {
-            id: 3,
-            title: "Defending Kashmir: Anchar's last stand against India's control",
-            role: "Film Maker & Report",
-            network: "The Guardian",
-            description: "People living in the suburb of Anchar are battling to keep security forces out. Since India stripped Jammu and Kashmir of its special status, the disputed region has been on security lockdown. Anchar, part of the main city of Srinagar, is thought to be the only major pocket of resistance",
-            videoThumbnail: "https://img.youtube.com/vi/_JtibKy_xkk/maxresdefault.jpg",
-            videoUrl: "https://www.youtube.com/watch?v=_JtibKy_xkk"
-        }
-    ]
+    if (loading) {
+        return <LoadingSpinner />
+    }
+
+    // Fallback to empty array if no data
+    const filmsList = films || []
 
     return (
         <main className="min-h-screen bg-white text-black">
@@ -57,7 +52,12 @@ export default function FilmsDocumentaries() {
             {/* Films Grid */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
-                    {films.map((film, index) => {
+                    {filmsList.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            No films found. Add projects from the admin panel.
+                        </div>
+                    ) : (
+                        filmsList.map((film, index) => {
                         // id 1 (index 0) = left, id 2 (index 1) = right, id 3 (index 2) = left
                         const isLeft = index % 2 === 0
 
@@ -154,7 +154,7 @@ export default function FilmsDocumentaries() {
                                 </div>
                             </div>
                         )
-                    })}
+                    }))}
                 </div>
             </section>
         </main>

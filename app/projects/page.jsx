@@ -1,11 +1,29 @@
 "use client"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getProjects, PROJECT_CATEGORIES } from "@/lib/projects"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function Projects() {
     const [playingVideo, setPlayingVideo] = useState(null)
     const [fullscreenImage, setFullscreenImage] = useState(null)
+    const [projects, setProjects] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        async function fetchProjects() {
+            try {
+                const data = await getProjects(PROJECT_CATEGORIES.ALL)
+                setProjects(data)
+            } catch (error) {
+                console.error('Error loading projects:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchProjects()
+    }, [])
 
     const getYouTubeVideoId = (url) => {
         const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
@@ -19,33 +37,10 @@ export default function Projects() {
     const closeFullscreen = () => {
         setFullscreenImage(null)
     }
-    const projects = [
-        {
-            id: 1,
-            title: "'I TRUSTED HIM': HUMAN TRAFFICKING SURGES IN CYCLONE-HIT EAST INDIA",
-            role: "Photo Journalist",
-            network: "The Guardian",
-            description: "It began gently at first, as a romantic relationship with Rubik, an older man from out of town. He promised her a better life, away from the devastation that Cyclone Amphan had left in their village. But what started as hope quickly turned into a nightmare of exploitation and human trafficking. Already an area where destitution is rife, and about 50% live below the poverty line, the Sundarbans is now on the forefront of the climate crisis. It is the area of India most regularly affected by cyclones, including three super cyclones in the past four years that killed hundreds of people, decimated homes and livelihoods and left the land salinated and arid.",
-            images: [
-                "/images/p1.png",
-                "/images/p2.png"
-            ],
-            type: "photo",
-            readMoreLink: "https://www.theguardian.com/world/2023/jun/13/i-trusted-him-human-trafficking-surges-in-cyclone-hit-east-india"
-        },
-        {
-            id: 2,
-            title: "THE HINDU EXTREMISTS AT WAR WITH INTERFAITH LOVE",
-            role: "Video Journalist",
-            network: "Vice News Tonight",
-            description: "Hindu nationalist vigilantes believe India is in the grips of an Islamic plot called 'Love Jihad'. They patrol the streets, breaking up relationships between Hindu women and Muslim men, often through violence and intimidation.",
-            videoThumbnail: "https://img.youtube.com/vi/jol-Rf69gxw/maxresdefault.jpg",
-            videoTitle: "The Hindu Extremists at War With Interfaith Love",
-            videoUrl: "https://www.youtube.com/watch?v=jol-Rf69gxw",
-            type: "video",
-            readMoreLink: "#"
-        }
-    ]
+
+    if (loading) {
+        return <LoadingSpinner />
+    }
 
     return (
         <main className="min-h-screen bg-white text-black">
@@ -65,13 +60,18 @@ export default function Projects() {
             {/* Projects Grid */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
-                    {projects.map((project) => (
+                    {projects.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            No projects found. Add projects from the admin panel.
+                        </div>
+                    ) : (
+                        projects.map((project) => (
                         <div key={project.id} className="w-full">
                             {project.type === "photo" ? (
                                 // Photo Journalist Layout - Split with dark sidebar and content area
                                 <div className="flex flex-col md:flex-row min-h-[600px] md:min-h-[700px]">
                                     {/* Content Area - Shows first on mobile */}
-                                    <div className="w-full md:w-2/3 bg-[#fefcf8] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
+                                    <div className="w-full md:w-2/3 bg-[#fdfdfd] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
                                         <div className="space-y-6">
                                             {/* Main Headline */}
                                             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tight leading-tight text-gray-900">
@@ -121,7 +121,7 @@ export default function Projects() {
                                     </div>
 
                                     {/* Images Sidebar - Shows after content on mobile */}
-                                    <div className="w-full md:w-1/3 bg-[#fefcf8] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
+                                    <div className="w-full md:w-1/3 bg-[#fdfdfd] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
                                         {/* Stacked Images */}
                                         <div className="flex-1 flex flex-col gap-1">
                                             {project.images.map((img, idx) => (
@@ -161,7 +161,7 @@ export default function Projects() {
                                 </div>
                             ) : (
                                 // Video Journalist Layout - Text left, Video right
-                                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 min-h-[500px] bg-[#fefcf8]">
+                                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 min-h-[500px] bg-[#fdfdfd]">
                                     {/* Left Content */}
                                     <div className="w-full lg:w-1/2 flex flex-col justify-center space-y-6 p-8 md:p-12 lg:p-16">
                                         {/* Main Heading */}
@@ -237,12 +237,12 @@ export default function Projects() {
                                 </div>
                             )}
                         </div>
-                    ))}
+                    )))}
                 </div>
             </section>
 
             {/* Project Categories Navigation */}
-            <section className="py-12 md:py-16 px-6 md:px-8 bg-[#fefcf8]">
+            <section className="py-12 md:py-16 px-6 md:px-8 bg-[#fdfdfd]">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                         <Link href="/projects/photo-stories" className="group">

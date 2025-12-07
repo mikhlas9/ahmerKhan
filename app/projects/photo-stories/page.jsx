@@ -1,10 +1,28 @@
 "use client"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getProjects, PROJECT_CATEGORIES } from "@/lib/projects"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function PhotoStories() {
     const [fullscreenImage, setFullscreenImage] = useState(null)
+    const [photoStories, setPhotoStories] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        async function fetchPhotoStories() {
+            try {
+                const data = await getProjects(PROJECT_CATEGORIES.PHOTO_STORIES)
+                setPhotoStories(data)
+            } catch (error) {
+                console.error('Error loading photo stories:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchPhotoStories()
+    }, [])
 
     const openFullscreen = (imageSrc) => {
         setFullscreenImage(imageSrc)
@@ -14,43 +32,12 @@ export default function PhotoStories() {
         setFullscreenImage(null)
     }
 
-    const photoStories = [
-        {
-            id: 1,
-            title: "On Kolkata's trams, a journey through the city's 'soul'",
-            role: "Photo Journalist",
-            network: "The Christian Science Monitor",
-            description: "As electric trams slowly rumble through the vibrant neighborhoods of Kolkata, formerly known as Calcutta, they take the passengers on a journey back in time. Part of the cultural fabric of the city for more than a century, the tram system has been allowed to atrophy for a lack of riders. Now, enthusiasts and climate activists are fighting to keep tram service as an eco-friendly transportation option.",
-            quote: "\"Trams are a great way to reduce emissions in the city,\" says Debasish Bhattacharyya, president of the Calcutta Tramways Users' Association (CTUA). \"In a time of climate crisis, we need to embrace modes of transport that are sustainable and efficient.\"",
-            images: [
-                "/images/ps1.png",
-            ],
-            readMoreLink: "https://www.csmonitor.com/The-Culture/2023/0420/In-Pictures-On-Kolkata-s-trams-a-journey-through-the-city-s-soul"
-        },
-        {
-            id: 2,
-            title: "'A dying art': India's female seaweed divers look to a brighter future for their girls",
-            role: "Photographer",
-            network: "The Guardian",
-            description: "With sacks tied around their saris and well-used goggles as their only equipment, the seaweed collectors of India's south-east coast have been diving in the Gulf of Mannar for decades, passing skills from mother to daughter. The women spend six hours a day in the sea, diving up to 4 metres (13ft) to harvest the seaweed from sharp rocks, holding their breath as they tuck the fronds into bags tied around their waists.",
-            images: [
-                "/images/ps2.png",
+    if (loading) {
+        return <LoadingSpinner />
+    }
 
-            ],
-            readMoreLink: "https://www.theguardian.com/global-development/2023/jun/30/dying-art-india-female-seaweed-divers-look-to-a-brighter-future-for-their-girls"
-        },
-        {
-            id: 3,
-            title: "'I trusted him': human trafficking surges in cyclone-hit east India",
-            role: "Photographer",
-            network: "The Guardian",
-            description: "It began gently at first, as a romantic relationship with Rubik, an older man from out of town. He promised her a better life, away from the devastation that Cyclone Amphan had left in their village. But what started as hope quickly turned into a nightmare of exploitation and human trafficking. Already an area where destitution is rife, and about 50% live below the poverty line, the Sundarbans is now on the forefront of the climate crisis. It is the area of India most regularly affected by cyclones, including three super cyclones in the past four years that killed hundreds of people, decimated homes and livelihoods and left the land salinated and arid.",
-            images: [
-                "/images/ps3.png",
-            ],
-            readMoreLink: "https://www.theguardian.com/world/2023/jun/13/i-trusted-him-human-trafficking-surges-in-cyclone-hit-east-india"
-        }
-    ]
+    // Fallback to empty array if no data
+    const stories = photoStories || []
 
     return (
         <main className="min-h-screen bg-white text-black">
@@ -69,7 +56,12 @@ export default function PhotoStories() {
             {/* Photo Stories Grid */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
-                    {photoStories.map((story, index) => {
+                    {stories.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            No photo stories found. Add projects from the admin panel.
+                        </div>
+                    ) : (
+                        stories.map((story, index) => {
                         const isEven = index % 2 === 1
                         const imageLeft = !isEven
 
@@ -78,7 +70,7 @@ export default function PhotoStories() {
                                 {/* Photo Story Layout - Alternating */}
                                 <div className={`flex flex-col md:flex-row min-h-[600px] md:min-h-[700px] ${imageLeft ? '' : 'md:flex-row-reverse'}`}>
                                     {/* Content Area */}
-                                    <div className="w-full md:w-2/3 bg-[#fefcf8] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
+                                    <div className="w-full md:w-2/3 bg-[#fdfdfd] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
                                         <div className="space-y-6">
                                             {/* Main Headline */}
                                             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tight leading-tight text-gray-900">
@@ -139,7 +131,7 @@ export default function PhotoStories() {
                                     </div>
 
                                     {/* Images Sidebar */}
-                                    <div className="w-full md:w-1/3 bg-[#fefcf8] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
+                                    <div className="w-full md:w-1/3 bg-[#fdfdfd] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
                                         {/* Stacked Images */}
                                         <div className="flex-1 flex flex-col gap-1">
                                             {story.images.map((img, idx) => (
@@ -179,7 +171,7 @@ export default function PhotoStories() {
                                 </div>
                             </div>
                         )
-                    })}
+                    }))}
                 </div>
             </section>
 

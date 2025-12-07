@@ -1,27 +1,32 @@
 "use client"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getPortraits, PORTRAIT_TYPES } from "@/lib/portraits"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function Portraits() {
     const [fullscreenImage, setFullscreenImage] = useState(null)
+    const [portraits, setPortraits] = useState([])
+    const [countryProjects, setCountryProjects] = useState([])
+    const [loading, setLoading] = useState(true)
 
-    const portraits = [
-        { id: 1, src: "/images/po1.png", alt: "Portrait 1", width: 400, height: 600 },
-        { id: 2, src: "/images/po2.png", alt: "Portrait 2", width: 600, height: 600 },
-        { id: 3, src: "/images/po3.png", alt: "Portrait 3", width: 500, height: 400 },
-        { id: 4, src: "/images/po4.png", alt: "Portrait 4", width: 600, height: 400 },
-        { id: 5, src: "/images/po5.png", alt: "Portrait 5", width: 400, height: 600 },
-        { id: 6, src: "/images/po6.png", alt: "Portrait 6", width: 500, height: 400 },
-        { id: 7, src: "/images/po7.png", alt: "Portrait 7", width: 500, height: 500 },
-        { id: 8, src: "/images/po8.png", alt: "Portrait 8", width: 600, height: 500 }
-    ]
-
-    const countryProjects = [
-        { id: 1, name: "Bangladesh", image: "/images/poc1.png", link: "#" },
-        { id: 2, name: "Afghanistan", image: "/images/poc2.png", link: "#" },
-        { id: 3, name: "Sri Lanka", image: "/images/poc3.png", link: "#" },
-        { id: 4, name: "South Korea", image: "/images/poc4.png", link: "#" }
-    ]
+    useEffect(() => {
+        async function fetchPortraits() {
+            try {
+                const [portraitsData, countryData] = await Promise.all([
+                    getPortraits(PORTRAIT_TYPES.PORTRAIT),
+                    getPortraits(PORTRAIT_TYPES.COUNTRY_PROJECT)
+                ])
+                setPortraits(portraitsData)
+                setCountryProjects(countryData)
+            } catch (error) {
+                console.error('Error loading portraits:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchPortraits()
+    }, [])
 
     const openFullscreen = (imageSrc) => {
         setFullscreenImage(imageSrc)
@@ -29,6 +34,10 @@ export default function Portraits() {
 
     const closeFullscreen = () => {
         setFullscreenImage(null)
+    }
+
+    if (loading) {
+        return <LoadingSpinner />
     }
 
   return (
@@ -48,21 +57,26 @@ export default function Portraits() {
             {/* Portraits Gallery - CSS Columns Masonry */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto">
-                    <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-6">
-                        {portraits.map((portrait) => (
-                            <div
-                                key={portrait.id}
-                                className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
-                                onClick={() => openFullscreen(portrait.src)}
-                            >
-                                <div className="relative overflow-hidden rounded-xl">
-                                    <Image
-                                        src={portrait.src}
-                                        alt={portrait.alt}
-                                        width={portrait.width}
-                                        height={portrait.height}
-                                        className="w-full h-auto transition-transform duration-500 ease-out group-hover:scale-105"
-                                    />
+                    {portraits.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            No portraits found. Add portraits from the admin panel.
+                        </div>
+                    ) : (
+                        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-6">
+                            {portraits.map((portrait) => (
+                                <div
+                                    key={portrait.id}
+                                    className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
+                                    onClick={() => openFullscreen(portrait.src)}
+                                >
+                                    <div className="relative overflow-hidden rounded-xl">
+                                        <Image
+                                            src={portrait.src}
+                                            alt={portrait.alt || "Portrait"}
+                                            width={portrait.width || 500}
+                                            height={portrait.height || 600}
+                                            className="w-full h-auto transition-transform duration-500 ease-out group-hover:scale-105"
+                                        />
                                     {/* Fullscreen Icon on Hover */}
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
                                         <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out shadow-lg">
@@ -80,11 +94,12 @@ export default function Portraits() {
                                                 />
                                             </svg>
                                         </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -107,11 +122,14 @@ export default function Portraits() {
 
                 <div className="pt-24 md:pt-32 px-6 md:px-8">
                     <div className="max-w-7xl mx-auto">
-                      
-
                         {/* Country Cards Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                            {countryProjects.map((country) => (
+                        {countryProjects.length === 0 ? (
+                            <div className="text-center py-12 text-gray-500">
+                                No country projects found. Add projects from the admin panel.
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                                {countryProjects.map((country) => (
                                 <div
                                     key={country.id}
                                     onClick={() => openFullscreen(country.image)}
@@ -154,8 +172,9 @@ export default function Portraits() {
                                     {/* Hover Border Effect */}
                                     <div className="absolute inset-0 border-4 border-white/0 group-hover:border-white/30 transition-all duration-500 rounded-2xl" />
                                 </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>

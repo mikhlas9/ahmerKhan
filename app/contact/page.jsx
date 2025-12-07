@@ -1,13 +1,11 @@
 "use client"
 import { useState, useEffect } from "react"
-
-// EmailJS - Simplest email solution, no domain verification needed
-// Get your credentials from https://www.emailjs.com/
-const EMAILJS_SERVICE_ID = "service_2e9v7qm"
-const EMAILJS_TEMPLATE_ID = "template_bs2ax69"
-const EMAILJS_PUBLIC_KEY = "aZResZzNAe34lYH2k"
+import { getContactData } from "@/lib/contact"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function Contact() {
+    const [contactInfo, setContactInfo] = useState(null)
+    const [loading, setLoading] = useState(true)
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -18,23 +16,41 @@ export default function Contact() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [emailjsLoaded, setEmailjsLoaded] = useState(false)
 
+    // Load contact information
+    useEffect(() => {
+        async function fetchContactInfo() {
+            try {
+                const data = await getContactData()
+                setContactInfo(data)
+            } catch (error) {
+                console.error('Error loading contact info:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchContactInfo()
+    }, [])
+
     // Load EmailJS script
     useEffect(() => {
-        if (typeof window !== 'undefined' && !window.emailjs) {
-            const script = document.createElement('script')
-            script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'
-            script.async = true
-            script.onload = () => {
-                if (window.emailjs) {
-                    window.emailjs.init(EMAILJS_PUBLIC_KEY)
-                    setEmailjsLoaded(true)
+        if (contactInfo && contactInfo.emailjsPublicKey) {
+            if (typeof window !== 'undefined' && !window.emailjs) {
+                const script = document.createElement('script')
+                script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'
+                script.async = true
+                script.onload = () => {
+                    if (window.emailjs) {
+                        window.emailjs.init(contactInfo.emailjsPublicKey)
+                        setEmailjsLoaded(true)
+                    }
                 }
+                document.body.appendChild(script)
+            } else if (window.emailjs) {
+                window.emailjs.init(contactInfo.emailjsPublicKey)
+                setEmailjsLoaded(true)
             }
-            document.body.appendChild(script)
-        } else if (window.emailjs) {
-            setEmailjsLoaded(true)
         }
-    }, [])
+    }, [contactInfo])
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -56,14 +72,14 @@ export default function Contact() {
 
             // Send email using EmailJS
             const result = await window.emailjs.send(
-                EMAILJS_SERVICE_ID,
-                EMAILJS_TEMPLATE_ID,
+                contactInfo.emailjsServiceId,
+                contactInfo.emailjsTemplateId,
                 {
                     from_name: formData.name,
                     from_email: formData.email,
                     subject: formData.subject,
                     message: formData.message,
-                    to_email: "mohammadikhlas99@gmail.com"
+                    to_email: contactInfo.recipientEmail
                 }
             )
 
@@ -87,11 +103,23 @@ export default function Contact() {
             console.error("Form submission error:", error)
             setStatus({
                 type: "error",
-                message: "Something went wrong. Please try again or email me directly at mohammadikhlas99@gmail.com"
+                message: `Something went wrong. Please try again or email me directly at ${contactInfo?.email || 'contact@example.com'}`
             })
         } finally {
             setIsSubmitting(false)
         }
+    }
+
+    if (loading) {
+        return <LoadingSpinner />
+    }
+
+    if (!contactInfo) {
+        return (
+            <main className="min-h-screen bg-white text-black flex items-center justify-center">
+                <div className="text-red-500">Error loading contact information.</div>
+            </main>
+        )
     }
 
   return (
@@ -100,10 +128,10 @@ export default function Contact() {
             <section className="py-10 md:py-16 px-6 md:px-8 ">
                 <div className="max-w-7xl mx-auto text-center">
                     <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase">
-                        Get In Touch
+                        {contactInfo.title || "Get In Touch"}
                     </h1>
                     <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
-                        Available for editorial assignments, documentary projects, and speaking engagements. Let's collaborate on telling important stories.
+                        {contactInfo.description || "Available for editorial assignments, documentary projects, and speaking engagements. Let's collaborate on telling important stories."}
                     </p>
           </div>
             </section>
@@ -114,7 +142,7 @@ export default function Contact() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
                         {/* Contact Information - Left Side */}
                         <div className="space-y-8">
-                            <div className="bg-[#f5f1e8] p-8 md:p-10 rounded-2xl">
+                            <div className="bg-[#ececf3] p-8 md:p-10 rounded-2xl">
                                 <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-tight">
                                     Contact Information
                                 </h2>
@@ -129,8 +157,8 @@ export default function Contact() {
                                         </div>
             <div>
                                             <h3 className="font-semibold text-gray-900 mb-2 uppercase text-sm tracking-wide">Email</h3>
-                                            <a href="mailto:contact@example.com" className="text-gray-700 hover:text-gray-900 transition-colors text-base">
-                                                contact@example.com
+                                            <a href={`mailto:${contactInfo.email}`} className="text-gray-700 hover:text-gray-900 transition-colors text-base">
+                                                {contactInfo.email}
                                             </a>
                                         </div>
             </div>
@@ -144,8 +172,8 @@ export default function Contact() {
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-gray-900 mb-2 uppercase text-sm tracking-wide">Phone</h3>
-                                            <a href="tel:+1234567890" className="text-gray-700 hover:text-gray-900 transition-colors text-base">
-                                                +1 (234) 567-890
+                                            <a href={`tel:${contactInfo.phone?.replace(/\s/g, '')}`} className="text-gray-700 hover:text-gray-900 transition-colors text-base">
+                                                {contactInfo.phone}
                 </a>
               </div>
             </div>
@@ -160,8 +188,10 @@ export default function Contact() {
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-gray-900 mb-2 uppercase text-sm tracking-wide">Location</h3>
-                                            <p className="text-gray-700 text-base">Based in South Asia</p>
-                                            <p className="text-gray-700 text-sm mt-1">Available for international assignments</p>
+                                            <p className="text-gray-700 text-base">{contactInfo.location}</p>
+                                            {contactInfo.locationDescription && (
+                                                <p className="text-gray-700 text-sm mt-1">{contactInfo.locationDescription}</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

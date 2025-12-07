@@ -1,21 +1,27 @@
 "use client"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getTearsheets } from "@/lib/tearsheets"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function Tearsheets() {
     const [fullscreenImage, setFullscreenImage] = useState(null)
+    const [tearsheets, setTearsheets] = useState([])
+    const [loading, setLoading] = useState(true)
 
-    const tearsheets = [
-        { id: 1, src: "/images/t1.jpg", alt: "Tearsheet 1", width: 600, height: 800, publication: "The Guardian" },
-        { id: 2, src: "/images/t2.png", alt: "Tearsheet 2", width: 800, height: 600, publication: "National Geographic" },
-        { id: 3, src: "/images/t3.jpg", alt: "Tearsheet 3", width: 700, height: 500, publication: "BBC" },
-        { id: 4, src: "/images/t4.png", alt: "Tearsheet 4", width: 600, height: 800, publication: "Al Jazeera" },
-        { id: 5, src: "/images/t5.png", alt: "Tearsheet 5", width: 800, height: 600, publication: "Vice News" },
-        { id: 6, src: "/images/t6.png", alt: "Tearsheet 6", width: 700, height: 500, publication: "AFP" },
-        { id: 7, src: "/images/t7.png", alt: "Tearsheet 7", width: 600, height: 800, publication: "TRT World" },
-        { id: 8, src: "/images/t8.jpg", alt: "Tearsheet 8", width: 800, height: 600, publication: "RFI" },
-        { id: 9, src: "/images/t9.png", alt: "Tearsheet 9", width: 700, height: 500, publication: "Reuters" }
-    ]
+    useEffect(() => {
+        async function fetchTearsheets() {
+            try {
+                const data = await getTearsheets()
+                setTearsheets(data)
+            } catch (error) {
+                console.error('Error loading tearsheets:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchTearsheets()
+    }, [])
 
     const openFullscreen = (imageSrc) => {
         setFullscreenImage(imageSrc)
@@ -23,6 +29,10 @@ export default function Tearsheets() {
 
     const closeFullscreen = () => {
         setFullscreenImage(null)
+    }
+
+    if (loading) {
+        return <LoadingSpinner />
     }
 
   return (
@@ -42,8 +52,13 @@ export default function Tearsheets() {
             {/* Tearsheets Gallery - CSS Columns Masonry */}
             <section className="py-12 md:py-16 px-4 md:px-6 ">
                 <div className="max-w-[1600px] mx-auto">
-                    <div className="columns-1 md:columns-2 gap-4 md:gap-6">
-                        {tearsheets.map((tearsheet) => (
+                    {tearsheets.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            No tearsheets found. Add tearsheets from the admin panel.
+                        </div>
+                    ) : (
+                        <div className="columns-1 md:columns-2 gap-4 md:gap-6">
+                            {tearsheets.map((tearsheet) => (
                             <div
                                 key={tearsheet.id}
                                 className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
@@ -55,9 +70,9 @@ export default function Tearsheets() {
                                         <div className="relative overflow-hidden rounded-lg">
                                             <Image
                                                 src={tearsheet.src}
-                                                alt={tearsheet.alt}
-                                                width={tearsheet.width}
-                                                height={tearsheet.height}
+                                                alt={tearsheet.alt || "Tearsheet"}
+                                                width={tearsheet.width || 600}
+                                                height={tearsheet.height || 800}
                                                 className="w-full h-auto transition-all duration-700 ease-out group-hover:scale-105"
                                             />
                                             {/* Subtle overlay on hover */}
@@ -97,10 +112,11 @@ export default function Tearsheets() {
                                     <div className="absolute top-3 right-3 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-gray-200 opacity-50" />
                                 </div>
                             </div>
-                        ))}
-                    </div>
-        </div>
-      </section>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </section>
 
             {/* Fullscreen Image Modal */}
             {fullscreenImage && (

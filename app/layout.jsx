@@ -1,12 +1,13 @@
 import "./globals.css"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
+import { generateMetadata as generateSEOMetadata } from "@/lib/seo"
 
-export const metadata = {
-  title: "Ahmer Khan | Multimedia Journalist",
-  description:
-    "Award-winning filmmaker, investigative journalist and multimedia storyteller covering conflict, humanitarian crisis and human rights in South Asia.",
-}
+export const metadata = generateSEOMetadata({
+  title: "Ahmer Khan",
+  description: "Award-winning filmmaker, investigative journalist and multimedia storyteller covering conflict, humanitarian crisis and human rights in South Asia.",
+  url: "/",
+})
 
 export const viewport = {
   themeColor: "#ffffff",

@@ -1,10 +1,28 @@
 "use client"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getProjects, PROJECT_CATEGORIES } from "@/lib/projects"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function GlobalAssignments() {
     const [fullscreenImage, setFullscreenImage] = useState(null)
+    const [assignments, setAssignments] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        async function fetchAssignments() {
+            try {
+                const data = await getProjects(PROJECT_CATEGORIES.GLOBAL_ASSIGNMENTS)
+                setAssignments(data)
+            } catch (error) {
+                console.error('Error loading assignments:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchAssignments()
+    }, [])
 
     const openFullscreen = (imageSrc) => {
         setFullscreenImage(imageSrc)
@@ -14,41 +32,12 @@ export default function GlobalAssignments() {
         setFullscreenImage(null)
     }
 
-    const assignments = [
-        {
-            id: 1,
-            title: "The Uighur and Syrian refugees making a home together in Turkey",
-            role: "Photo Story",
-            network: "Al Jazeera",
-            description: "Kayseri, Turkey – In the quiet streets of a suburb of the historic central Anatolian city of Kayseri, a group of children play football. They are Uighurs and Syrians. Thirteen-year-old Moaaz is the oldest among them. He is one of the five children of Mohammad Taufeeq, 55, who fled with his family from the Syrian city of Homs six years ago. Two of his sons are now grown up and have moved away from home, while the younger three – Moaaz and his two sisters – live with their parents in Kayseri.",
-            images: [
-                "/images/ga1.png"
-            ],
-            readMoreLink: "https://www.aljazeera.com/features/2021/3/4/the-uighur-and-syrian-refugees-making-a-home-together-in-turkey"
-        },
-        {
-            id: 2,
-            title: "These are the Rohingya Children who escaped Myanmar's 'Ethnic Cleansing'",
-            role: "Photo Story",
-            network: "Vice News",
-            description: "She's one of the hundreds of thousands of Rohingya children who escaped a vicious military campaign by Myanmar's armed forces in late August that saw houses burned to the ground and widespread rape used as a weapon. The United Nations has since described the campaign as a \"textbook example of ethnic cleansing,\" with the organization's human rights chief telling reporters Tuesday he could not rule out \"elements of genocide.\"",
-            images: [
-                "/images/ga2.png"
-            ],
-            readMoreLink: "https://www.vice.com/en/article/these-are-the-rohingya-children-who-escaped-myanmars-ethnic-cleansing/"
-        },
-        {
-            id: 3,
-            title: "In Sri Lanka, a Dying Livelihood, a Tourist Attraction",
-            role: "Photographer",
-            network: "The Diplomat",
-            description: "WELIGAMA, SRI LANKA — A few dozen meters from the shoreline, fisherman T. H. Sena sits motionless on a wooden stilt, waiting for tourists to come and pose for pictures. A picture in return for money. Stilt fishing is a recent innovation, first adopted just after World War II when food shortages and overcrowded fishing spots prompted people to try fishing further out on the water. Two generations of fishermen have eked out this physically demanding existence at dawn and dusk along a 30-kilometer stretch of southern shore between the towns of Unawatuna and Weligama.",
-            images: [
-                "/images/ga3.png"
-            ],
-            readMoreLink: "https://thediplomat.com/2018/06/in-sri-lanka-a-dying-livelihood-a-tourist-attraction/"
-        }
-    ]
+    if (loading) {
+        return <LoadingSpinner />
+    }
+
+    // Fallback to empty array if no data
+    const assignmentsList = assignments || []
 
     return (
         <main className="min-h-screen bg-white text-black">
@@ -67,7 +56,12 @@ export default function GlobalAssignments() {
             {/* Assignments Grid */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
-                    {assignments.map((assignment, index) => {
+                    {assignmentsList.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            No assignments found. Add projects from the admin panel.
+                        </div>
+                    ) : (
+                        assignmentsList.map((assignment, index) => {
                         const isEven = index % 2 === 1
                         const imageLeft = !isEven
 
@@ -76,7 +70,7 @@ export default function GlobalAssignments() {
                                 {/* Photo Assignment Layout - Alternating */}
                                 <div className={`flex flex-col md:flex-row min-h-[600px] md:min-h-[700px] ${imageLeft ? '' : 'md:flex-row-reverse'}`}>
                                     {/* Content Area */}
-                                    <div className="w-full md:w-2/3 bg-[#fefcf8] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
+                                    <div className="w-full md:w-2/3 bg-[#fdfdfd] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
                                         <div className="space-y-6">
                                             {/* Main Headline */}
                                             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tight leading-tight text-gray-900">
@@ -128,7 +122,7 @@ export default function GlobalAssignments() {
                                     </div>
 
                                     {/* Images Sidebar */}
-                                    <div className="w-full md:w-1/3 bg-[#fefcf8] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
+                                    <div className="w-full md:w-1/3 bg-[#fdfdfd] flex flex-col min-h-[400px] md:min-h-0 order-2 md:order-1">
                                         {/* Stacked Images */}
                                         <div className="flex-1 flex flex-col gap-1">
                                             {assignment.images.map((img, idx) => (
@@ -168,7 +162,7 @@ export default function GlobalAssignments() {
                                 </div>
                             </div>
                         )
-                    })}
+                    }))}
                 </div>
             </section>
 

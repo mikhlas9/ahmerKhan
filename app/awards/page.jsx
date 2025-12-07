@@ -1,10 +1,33 @@
 "use client"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getAwards, AWARD_TYPES } from "@/lib/awards"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function Awards() {
     const [playingVideo, setPlayingVideo] = useState(null)
     const [fullscreenImage, setFullscreenImage] = useState(null)
+    const [awards, setAwards] = useState([])
+    const [recognitionAwards, setRecognitionAwards] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        async function fetchAwards() {
+            try {
+                const [mainAwardsData, recognitionData] = await Promise.all([
+                    getAwards(AWARD_TYPES.AWARD),
+                    getAwards(AWARD_TYPES.RECOGNITION)
+                ])
+                setAwards(mainAwardsData)
+                setRecognitionAwards(recognitionData)
+            } catch (error) {
+                console.error('Error loading awards:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchAwards()
+    }, [])
 
     const getYouTubeVideoId = (url) => {
         const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
@@ -19,70 +42,9 @@ export default function Awards() {
         setFullscreenImage(null)
     }
 
-    const awards = [
-        {
-            id: 1,
-            year: "2018",
-            award: "Lorenzo Natali Price",
-            title: "A school under metro bridge teaches Delhi children",
-            outlet: "RFI",
-            description: "There are millions of children of primary-school age in India who don't attend school. For some, school is too far away, others have to work at home and some can't afford to go.",
-            image: "/images/a1.png",
-            videoUrl: null
-        },
-        {
-            id: 2,
-            year: "2019",
-            award: "AFP's Kate Webb Prize",
-            title: "Kashmir Reporting",
-            outlet: "AFP",
-            description: "Honoured for a series of video and written reports that vividly illustrated the impact on locals in the Muslim-majority area following India's decision to strip occupied Kashmir of its special status in August of last year.",
-            image: "/images/a2.png",
-            videoUrl: null
-        },
-        {
-            id: 3,
-            year: "2020",
-            award: "Edward R. Murrow & Rory Peck Award",
-            title: "India Burning",
-            outlet: "VICE News",
-            description: "Riots in India, citizenship stripping, Hindu nationalist rhetoric, and the targeting of 200 million Muslims for potential detention camps.",
-            videoThumbnail: "https://img.youtube.com/vi/MCyBL8dBOEo/maxresdefault.jpg",
-            videoUrl: "https://www.youtube.com/watch?v=MCyBL8dBOEo",
-            image: null
-        },
-      
-        {
-            id: 4,
-            year: "2020",
-            award: "Human Rights Press Award",
-            title: "Defending Kashmir, Short film",
-            outlet: "The Guardian",
-            description: "People in Anchar battling security forces after Jammu and Kashmir's special status was revoked, leading to a security lockdown.",
-            videoThumbnail: "https://img.youtube.com/vi/_JtibKy_xkk/maxresdefault.jpg",
-            videoUrl: "https://www.youtube.com/watch?v=_JtibKy_xkk",
-            image: null
-        },
-        {
-            id: 5,
-            year: "2021",
-            award: "Lovei Award",
-            title: "Love Jihad in India's Uttar Pradesh",
-            outlet: "TRT World",
-            description: "Why has love become a crime in India's largest state? Uttar Pradesh's Hindutva far-right government is using recently enacted anti-conversion laws to target interfaith unions.",
-            videoThumbnail: "https://img.youtube.com/vi/WXwcUK1-evo/maxresdefault.jpg",
-            videoUrl: "https://www.youtube.com/watch?v=WXwcUK1-evo",
-            image: null
-        },
-        {
-            id: 6,
-            year: "2023",
-            award: "Martin Adler Prize",
-            quote: "Ahmer Khan's journalism sheds light on some of the toughest and most heated issues in India, while his writing shows impact and sensitivity. He tackled one of the most difficult stories in one of the most difficult places. It's fearless reporting at its best.",
-            attribution: "Martin Adler Prize Jury",
-            image: "/images/a3.jpeg"
-        }
-    ]
+    if (loading) {
+        return <LoadingSpinner text="Loading" />
+    }
 
     return (
         <main className="min-h-screen bg-white text-black">
@@ -101,7 +63,12 @@ export default function Awards() {
             {/* Awards Grid */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
-                    {awards.map((award, index) => {
+                    {awards.length === 0 ? (
+                        <div className="text-center py-12 text-gray-500">
+                            No awards found. Add awards from the admin panel.
+                        </div>
+                    ) : (
+                        awards.map((award, index) => {
                         // id 1 (index 0) = left, id 2 (index 1) = right, id 3 (index 2) = left, etc.
                         const isLeft = index % 2 === 0
 
@@ -291,46 +258,23 @@ export default function Awards() {
                                 )}
                             </div>
                         )
-                    })}
+                    }))}
                 </div>
             </section>
 
             {/* Recognition Section */}
-            <section className="pb-24 px-6 md:px-8 bg-[#fefbf5] py-16">
+            <section className="pb-24 px-6 md:px-8 bg-[#ececf3] py-16">
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-15 uppercase text-center">
                         Recognition
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                        {[
-                            {
-                                id: 7,
-                                year: "2020",
-                                award: "Emmy Awards",
-                                title: "India Burning",
-                                status: "Finalist",
-                                videoThumbnail: "https://img.youtube.com/vi/MCyBL8dBOEo/maxresdefault.jpg",
-                                videoUrl: "https://www.youtube.com/watch?v=MCyBL8dBOEo"
-                            },
-                            {
-                                id: 8,
-                                year: "2021",
-                                award: "Scripps Howard Award",
-                                title: "India Burning",
-                                status: "Finalist",
-                                videoThumbnail: "https://img.youtube.com/vi/MCyBL8dBOEo/maxresdefault.jpg",
-                                videoUrl: "https://www.youtube.com/watch?v=MCyBL8dBOEo"
-                            },
-                            {
-                                id: 9,
-                                year: "2022",
-                                award: "Emmy Awards",
-                                title: "Inside India's Covid Hell",
-                                status: "Finalist",
-                                videoThumbnail: "https://img.youtube.com/vi/myb8GxLLpT0/maxresdefault.jpg",
-                                videoUrl: "https://www.youtube.com/watch?v=myb8GxLLpT0"
-                            }
-                        ].map((award) => (
+                        {recognitionAwards.length === 0 ? (
+                            <div className="col-span-3 text-center py-12 text-gray-500">
+                                No recognition awards found. Add awards from the admin panel.
+                            </div>
+                        ) : (
+                            recognitionAwards.map((award) => (
                             <div key={award.id} className="space-y-4">
                                 <div className="space-y-2">
                                     <p className="text-base md:text-lg font-bold text-gray-900">
@@ -396,7 +340,8 @@ export default function Awards() {
                                     )}
                                 </div>
                             </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
             </section>
