@@ -4,6 +4,7 @@ import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import ImageUpload from "@/components/ImageUpload"
 import { getTearsheets, createTearsheet, updateTearsheet, deleteTearsheet } from "@/lib/tearsheets"
+import Toast from "@/components/Toast"
 
 function AdminTearsheets() {
   const [tearsheets, setTearsheets] = useState([])
@@ -81,7 +82,7 @@ function AdminTearsheets() {
       : await createTearsheet(dataToSave)
 
     if (result.success) {
-      setMessage({ type: "success", text: editingId ? "Tearsheet updated!" : "Tearsheet created!" })
+      setMessage({ type: "success", text: "Updated" })
       setShowForm(false)
       setEditingId(null)
       loadTearsheets()
@@ -95,7 +96,7 @@ function AdminTearsheets() {
 
     const result = await deleteTearsheet(id)
     if (result.success) {
-      setMessage({ type: "success", text: "Tearsheet deleted!" })
+      setMessage({ type: "success", text: "Updated" })
       loadTearsheets()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to delete tearsheet" })
@@ -114,10 +115,16 @@ function AdminTearsheets() {
           <p className="text-gray-600">Add, edit, and delete your tearsheets</p>
         </div>
 
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
-          }`}>
+        {/* Toast Notification */}
+        <Toast 
+          message={message.type === "success" ? message.text : null} 
+          type={message.type} 
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
+        
+        {/* Error Message */}
+        {message.type === "error" && message.text && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-800">
             {message.text}
           </div>
         )}

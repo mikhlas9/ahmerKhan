@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import { getContactData, updateContactData, initializeContactData } from "@/lib/contact"
+import Toast from "@/components/Toast"
 
 function AdminContact() {
   const [contactInfo, setContactInfo] = useState(null)
@@ -59,7 +60,7 @@ function AdminContact() {
     const result = await updateContactData(formData)
 
     if (result.success) {
-      setMessage({ type: "success", text: "Contact information updated successfully!" })
+      setMessage({ type: "success", text: "Updated" })
       loadContactData()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to update contact information" })
@@ -76,7 +77,7 @@ function AdminContact() {
     const result = await initializeContactData()
 
     if (result.success) {
-      setMessage({ type: "success", text: "Contact information initialized with default values!" })
+      setMessage({ type: "success", text: "Updated" })
       loadContactData()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to initialize contact information" })
@@ -96,10 +97,16 @@ function AdminContact() {
           <p className="text-gray-600">Update your contact details and EmailJS configuration</p>
         </div>
 
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
-          }`}>
+        {/* Toast Notification */}
+        <Toast 
+          message={message.type === "success" ? message.text : null} 
+          type={message.type} 
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
+        
+        {/* Error Message */}
+        {message.type === "error" && message.text && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-800">
             {message.text}
           </div>
         )}

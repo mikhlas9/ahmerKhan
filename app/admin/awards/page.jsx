@@ -5,6 +5,7 @@ import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import ImageUpload from "@/components/ImageUpload"
 import { getAwards, createAward, updateAward, deleteAward, AWARD_TYPES } from "@/lib/awards"
 import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/storage"
+import Toast from "@/components/Toast"
 
 function AdminAwards() {
   const [awards, setAwards] = useState([])
@@ -160,7 +161,7 @@ function AdminAwards() {
       : await createAward(dataToSave)
 
     if (result.success) {
-      setMessage({ type: "success", text: editingId ? "Award updated!" : "Award created!" })
+      setMessage({ type: "success", text: "Updated" })
       setShowForm(false)
       setEditingId(null)
       loadAwards()
@@ -174,7 +175,7 @@ function AdminAwards() {
 
     const result = await deleteAward(id)
     if (result.success) {
-      setMessage({ type: "success", text: "Award deleted!" })
+      setMessage({ type: "success", text: "Updated" })
       loadAwards()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to delete award" })
@@ -195,10 +196,16 @@ function AdminAwards() {
           <p className="text-gray-600">Add, edit, and delete your awards and recognition</p>
         </div>
 
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
-          }`}>
+        {/* Toast Notification */}
+        <Toast 
+          message={message.type === "success" ? message.text : null} 
+          type={message.type} 
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
+        
+        {/* Error Message */}
+        {message.type === "error" && message.text && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-800">
             {message.text}
           </div>
         )}

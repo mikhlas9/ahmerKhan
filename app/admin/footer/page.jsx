@@ -3,6 +3,7 @@ import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import { useState, useEffect } from "react"
 import { getFooterData, saveFooterData, initializeFooter } from "@/lib/footer"
 import { useRouter } from "next/navigation"
+import Toast from "@/components/Toast"
 
 function FooterAdmin() {
   const router = useRouter()
@@ -70,10 +71,7 @@ function FooterAdmin() {
       })
 
       if (result.success) {
-        setMessage({ type: "success", text: "Footer updated successfully!" })
-        setTimeout(() => {
-          router.push("/admin")
-        }, 1500)
+        setMessage({ type: "success", text: "Updated" })
       } else {
         setMessage({ type: "error", text: result.error || "Failed to save" })
       }
@@ -88,7 +86,7 @@ function FooterAdmin() {
     if (confirm("This will initialize the footer with default data. Continue?")) {
       const result = await initializeFooter()
       if (result.success) {
-        setMessage({ type: "success", text: result.message })
+        setMessage({ type: "success", text: "Updated" })
         // Reload the form
         window.location.reload()
       } else {
@@ -120,13 +118,16 @@ function FooterAdmin() {
           <p className="text-gray-600 mt-2">Manage social links and copyright text</p>
         </div>
 
-        {/* Message */}
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === "success" 
-              ? "bg-green-50 text-green-800 border border-green-200" 
-              : "bg-red-50 text-red-800 border border-red-200"
-          }`}>
+        {/* Toast Notification */}
+        <Toast 
+          message={message.type === "success" ? message.text : null} 
+          type={message.type} 
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
+        
+        {/* Error Message */}
+        {message.type === "error" && message.text && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200">
             {message.text}
           </div>
         )}

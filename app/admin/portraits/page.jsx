@@ -4,6 +4,7 @@ import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import ImageUpload from "@/components/ImageUpload"
 import { getPortraits, createPortrait, updatePortrait, deletePortrait, PORTRAIT_TYPES } from "@/lib/portraits"
+import Toast from "@/components/Toast"
 
 function AdminPortraits() {
   const [portraits, setPortraits] = useState([])
@@ -134,7 +135,7 @@ function AdminPortraits() {
       : await createPortrait(dataToSave)
 
     if (result.success) {
-      setMessage({ type: "success", text: editingId ? "Portrait updated!" : "Portrait created!" })
+      setMessage({ type: "success", text: "Updated" })
       setShowForm(false)
       setEditingId(null)
       loadPortraits()
@@ -148,7 +149,7 @@ function AdminPortraits() {
 
     const result = await deletePortrait(id)
     if (result.success) {
-      setMessage({ type: "success", text: "Portrait deleted!" })
+      setMessage({ type: "success", text: "Updated" })
       loadPortraits()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to delete portrait" })
@@ -169,10 +170,16 @@ function AdminPortraits() {
           <p className="text-gray-600">Add, edit, and delete your portraits and country projects</p>
         </div>
 
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
-          }`}>
+        {/* Toast Notification */}
+        <Toast 
+          message={message.type === "success" ? message.text : null} 
+          type={message.type} 
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
+        
+        {/* Error Message */}
+        {message.type === "error" && message.text && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-800">
             {message.text}
           </div>
         )}
@@ -341,7 +348,7 @@ function AdminPortraits() {
                       {item.type === PORTRAIT_TYPES.PORTRAIT ? (
                         <>
                           {item.src && (
-                            <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                            <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                               <img
                                 src={item.src}
                                 alt={item.alt || "Portrait"}
@@ -358,7 +365,7 @@ function AdminPortraits() {
                       ) : (
                         <>
                           {item.image && (
-                            <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                            <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                               <img
                                 src={item.image}
                                 alt={item.name}

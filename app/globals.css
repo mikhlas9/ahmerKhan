@@ -130,6 +130,12 @@
   html {
     scroll-behavior: smooth;
   }
+  
+  /* Chonburi font for h1 elements on specific pages */
+  h1.font-chonburi {
+    font-family: var(--font-chonburi), serif;
+    font-weight: 400;
+  }
 }
 
 /* Remove any UI component styles not needed */
@@ -143,4 +149,19 @@ a {
 
 ::selection {
   @apply bg-black text-white;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
 }

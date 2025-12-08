@@ -12,6 +12,7 @@ import {
   PROJECT_CATEGORIES,
   PROJECT_TYPES
 } from "@/lib/projects"
+import Toast from "@/components/Toast"
 
 function ProjectsAdmin() {
   const router = useRouter()
@@ -186,7 +187,7 @@ function ProjectsAdmin() {
       }
 
       if (result.success) {
-        setMessage({ type: "success", text: editingProject ? "Project updated!" : "Project created!" })
+        setMessage({ type: "success", text: "Updated" })
         resetForm()
         loadProjects()
       } else {
@@ -204,7 +205,7 @@ function ProjectsAdmin() {
 
     const result = await deleteProject(projectId)
     if (result.success) {
-      setMessage({ type: "success", text: "Project deleted!" })
+      setMessage({ type: "success", text: "Updated" })
       loadProjects()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to delete" })
@@ -238,12 +239,16 @@ function ProjectsAdmin() {
           </div>
         </div>
 
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === "success" 
-              ? "bg-green-50 text-green-800 border border-green-200" 
-              : "bg-red-50 text-red-800 border border-red-200"
-          }`}>
+        {/* Toast Notification */}
+        <Toast 
+          message={message.type === "success" ? message.text : null} 
+          type={message.type} 
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
+        
+        {/* Error Message */}
+        {message.type === "error" && message.text && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200">
             {message.text}
           </div>
         )}

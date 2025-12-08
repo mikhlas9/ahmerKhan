@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { getHomepageData, saveHomepageData, initializeHomepage } from "@/lib/homepage"
 import { useRouter } from "next/navigation"
 import ImageUpload from "@/components/ImageUpload"
+import Toast from "@/components/Toast"
 
 function HomepageAdmin() {
   const router = useRouter()
@@ -86,10 +87,7 @@ function HomepageAdmin() {
       })
 
       if (result.success) {
-        setMessage({ type: "success", text: "Homepage updated successfully!" })
-        setTimeout(() => {
-          router.push("/")
-        }, 1500)
+        setMessage({ type: "success", text: "Updated" })
       } else {
         setMessage({ type: "error", text: result.error || "Failed to save" })
       }
@@ -104,7 +102,7 @@ function HomepageAdmin() {
     if (confirm("This will initialize the homepage with default data. Continue?")) {
       const result = await initializeHomepage()
       if (result.success) {
-        setMessage({ type: "success", text: result.message })
+        setMessage({ type: "success", text: "Updated" })
         // Reload the form
         window.location.reload()
       } else {
@@ -136,13 +134,16 @@ function HomepageAdmin() {
           <p className="text-gray-600 mt-2">Update your name, title, bio, and credentials</p>
         </div>
 
-        {/* Message */}
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === "success" 
-              ? "bg-green-50 text-green-800 border border-green-200" 
-              : "bg-red-50 text-red-800 border border-red-200"
-          }`}>
+        {/* Toast Notification */}
+        <Toast 
+          message={message.type === "success" ? message.text : null} 
+          type={message.type} 
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
+        
+        {/* Error Message */}
+        {message.type === "error" && message.text && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200">
             {message.text}
           </div>
         )}
