@@ -39,7 +39,7 @@ export default function Navbar() {
             {/* Left Side - Name and Subtitle */}
             <div className="flex flex-col">
               <Link href="/" className="group">
-                <h1 className="text-xl md:text-4xl font-bold text-black tracking-wider uppercase leading-tight">
+                <h1 className="text-2xl md:text-4xl font-bold text-black tracking-wider uppercase leading-tight">
                   {name}
                 </h1>
                 <p className="text-[10px] md:text-sm text-gray-500 mt-1 font-normal leading-tight">

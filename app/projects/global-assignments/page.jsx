@@ -44,10 +44,10 @@ export default function GlobalAssignments() {
             {/* Header Section */}
             <section className="py-10 md:py-16 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase">
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 uppercase">
                         Global Assignments
                     </h1>
-                    <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
+                    <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
                         International reporting and assignments from around the world
                     </p>
                 </div>

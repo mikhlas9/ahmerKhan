@@ -40,10 +40,10 @@ export default function Tearsheets() {
             {/* Header Section */}
             <section className="py-10 md:py-16 px-4 md:px-6 ">
                 <div className="max-w-[1600px] mx-auto text-center">
-                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase">
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 uppercase">
                         Tearsheets
                     </h1>
-                    <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
+                    <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
                         Published work in leading international publications including National Geographic, The Guardian, BBC, Al Jazeera, and prestigious documentary film festivals showcasing investigative journalism and multimedia storytelling.
                     </p>
                 </div>
