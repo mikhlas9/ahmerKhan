@@ -1,8 +1,23 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getHomepageData } from '@/lib/homepage';
+import Link from 'next/link';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [homepageData, setHomepageData] = useState(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getHomepageData();
+        setHomepageData(data);
+      } catch (error) {
+        console.error('Error loading homepage data:', error);
+      }
+    }
+    fetchData();
+  }, []);
 
   const menuItems = [
     { name: 'HOME', href: '/' },
@@ -13,30 +28,43 @@ export default function Navbar() {
     { name: 'CONTACT', href: '/contact' },
   ];
 
+  const name = homepageData?.name || 'AHMER KHAN';
+  const title = homepageData?.title || 'Filmmaker & Investigative Journalist';
+
  return (
     <>
-      <nav className=" bg-white z-50 border-b border-gray-200">
+      <nav className="bg-white z-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between w-full">
-           
+            {/* Left Side - Name and Subtitle */}
+            <div className="flex flex-col">
+              <Link href="/" className="group">
+                <h1 className="text-xl md:text-4xl font-bold text-black tracking-wider uppercase leading-tight">
+                  {name}
+                </h1>
+                <p className="text-[10px] md:text-sm text-gray-500 mt-1 font-normal leading-tight">
+                  {title}
+                </p>
+              </Link>
+            </div>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-8 mx-auto">
+            {/* Desktop Menu - Right Side */}
+            <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
               {menuItems.map((item) => (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
                   className="text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200"
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
             </div>
 
             {/* Hamburger Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden pr-2 focus:outline-none ml-auto"
+              className="md:hidden pr-2 focus:outline-none"
               aria-label="Toggle menu"
             >
               <div className="w-7 h-6 flex flex-col justify-center gap-1.5">
@@ -85,7 +113,7 @@ export default function Navbar() {
           }`}
         >
           {menuItems.map((item, index) => (
-            <a
+            <Link
               key={item.name}
               href={item.href}
               onClick={() => setIsOpen(false)}
@@ -98,7 +126,7 @@ export default function Navbar() {
               }}
             >
               {item.name}
-            </a>
+            </Link>
           ))}
         </div>
       </div>

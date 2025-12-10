@@ -2,14 +2,6 @@ import "./globals.css"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { generateMetadata as generateSEOMetadata } from "@/lib/seo"
-import { Chonburi } from "next/font/google"
-
-const chonburi = Chonburi({
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-chonburi",
-})
 
 export const metadata = generateSEOMetadata({
   title: "Ahmer Khan",
@@ -24,7 +16,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={chonburi.variable}>
+    <html lang="en">
       <body className="bg-white text-black font-sans antialiased">
         <Navbar />
         <main>{children}</main>

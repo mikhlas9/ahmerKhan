@@ -48,7 +48,7 @@ export default function Home() {
         <div className="max-w-4xl w-full space-y-12">
           {/* Name and title */}
           <div className="text-center space-y-6">
-            <h1 className="text-7xl md:text-8xl font-bold tracking-wider leading-tight font-chonburi">
+            <h1 className="text-7xl md:text-8xl font-bold tracking-wider leading-tight">
               {data.name}
             </h1>
             <p className="text-[14px] leading-[25px] font-normal tracking-widest text-gray-600 uppercase">

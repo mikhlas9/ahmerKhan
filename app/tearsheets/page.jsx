@@ -40,7 +40,7 @@ export default function Tearsheets() {
             {/* Header Section */}
             <section className="py-10 md:py-16 px-4 md:px-6 ">
                 <div className="max-w-[1600px] mx-auto text-center">
-                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase font-chonburi">
+                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 uppercase">
                         Tearsheets
                     </h1>
                     <p className="text-base md:text-lg font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
