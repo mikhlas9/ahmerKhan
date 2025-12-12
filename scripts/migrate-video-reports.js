@@ -137,6 +137,7 @@ function parseVideoReportEntry(entry) {
 const videoReportsData = [
   'AlJazeera - The Listening Post | Inside India\'s expulsion of Bengali Muslims https://youtu.be/m-udJsQEu8I?si=c2ZOniTKduW3cn1L',
   'ITV News: Local community pays tribute to teenage boy killed in Air India disaster https://youtu.be/3EyeGvie-ZY?si=d9jAvOrbKZAyVadC',
+  'ITV News: A week since the Air India disaster, the company\'s boss defends the airline safety record https://youtu.be/Qd744NpUWs0?si=znsXFQJnaBGJqCu9',
   'ABC Australia: Injured but willing to fight again, why Myanmar\'s rebel fighters cross into India https://youtu.be/73icmkPoucE?si=SRe9r66zHVlEXof8',
   'AlJazeera - The Listening Post | India\'s surprising election results and the verdict on the media https://youtu.be/wTITvNd0eHo?si=Bhi9CleHGNrirsr_',
   'The New York Times: How AI Tools Could Change India\'s Elections https://youtu.be/XXUvvn4Dczw?si=G1UVroiCS9xMFwqV',

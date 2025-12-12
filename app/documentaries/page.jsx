@@ -46,7 +46,7 @@ export default function Documentaries() {
                 </div>
             </section>
 
-            {/* Documentaries Grid */}
+            {/* Documentaries Grid - Card/Box Layout */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto">
                     {documentaries.length === 0 ? (
@@ -54,14 +54,14 @@ export default function Documentaries() {
                             No documentaries found. Add documentaries from the admin panel.
                         </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16">
                             {documentaries.map((doc) => {
                                 const videoId = getYouTubeVideoId(doc.videoUrl)
                                 
                                 return (
-                                  <div key={doc.id} className="space-y-6">
-                                        {/* Video Player */}
-                                        <div className="relative w-full aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-xl">
+                                    <div key={doc.id} className="bg-white rounded-lg overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                                        {/* Video Thumbnail Box */}
+                                        <div className="relative w-full aspect-video bg-gray-900">
                                             {playingVideo === doc.id ? (
                                                 <iframe
                                                     width="100%"
@@ -87,31 +87,16 @@ export default function Documentaries() {
                                                     ) : (
                                                         <div className="w-full h-full bg-gray-800" />
                                                     )}
-                                                    {/* Video Overlay with gradient */}
-                                                   {/* <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
-                                                         Play Button 
-                                                        <div className="absolute inset-0 flex items-center justify-center">
-                                                            <div className="w-16 h-16 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center group-hover:bg-red-700 group-hover:scale-110 transition-all duration-300 shadow-2xl">
-                                                                <svg
-                                                                    className="w-8 h-8 md:w-10 md:h-10 text-white ml-1"
-                                                                    fill="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path d="M8 5v14l11-7z" />
-                                                                </svg>
-                                                            </div>
-                                                        </div>
-                                                    </div>*/}
                                                 </div>
                                             )}
                                         </div>
                                         
-                                        {/* Outlet and Title */}
-                                        <div className="space-y-2.5 text-center pt-3">
+                                        {/* Text Content Box */}
+                                        <div className="p-6 md:p-8 space-y-3.5">
                                             <p className="text-sm md:text-[15px] font-bold text-gray-900 uppercase tracking-wide">
                                                 {doc.outlet}
                                             </p>
-                                            <h3 className="text-[15px] md:text-lg font-normal text-gray-800 leading-[1.6] max-w-md mx-auto">
+                                            <h3 className="text-[15px] md:text-lg font-normal text-gray-800 leading-[1.6]">
                                                 {doc.title}
                                             </h3>
                                         </div>

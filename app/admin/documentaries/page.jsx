@@ -50,12 +50,21 @@ function AdminDocumentaries() {
   }
 
   function handleNew() {
+    // Auto-suggest next order number (max order + 1, or 1 if empty)
+    const validOrders = documentaries
+      .map(d => d.order || 0)
+      .filter(order => order >= 1) // Only consider orders >= 1
+    const maxOrder = validOrders.length > 0 
+      ? Math.max(...validOrders)
+      : 0
+    const nextOrder = maxOrder + 1
+    
     setFormData({
       outlet: "",
       title: "",
       videoUrl: "",
       videoThumbnail: "",
-      order: 0
+      order: nextOrder
     })
     setEditingId(null)
     setShowForm(true)
@@ -175,8 +184,11 @@ function AdminDocumentaries() {
                     value={formData.order}
                     onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    min="1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Lower numbers appear first</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Lower numbers appear first. Orders are independent for Documentaries only.
+                  </p>
                 </div>
               </div>
 
