@@ -57,13 +57,79 @@ export default function Portraits() {
             {/* Portraits Gallery - CSS Columns Masonry */}
             <section className="pb-24 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto">
-                    {portraits.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500">
-                            No portraits found. Add portraits from the admin panel.
+                    {/* Static Images */}
+                    <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-6">
+                        {/* Static Image 1 */}
+                        <div
+                            className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
+                            onClick={() => openFullscreen("/images/img.jpeg")}
+                        >
+                            <div className="relative overflow-hidden rounded-xl">
+                                <Image
+                                    src="/images/img.jpeg"
+                                    alt="Portrait"
+                                    width={500}
+                                    height={600}
+                                    className="w-full h-auto transition-transform duration-500 ease-out group-hover:scale-105"
+                                />
+                                {/* Fullscreen Icon on Hover */}
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                    <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out shadow-lg">
+                                        <svg
+                                            className="w-6 h-6 text-gray-900"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={2}
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-6">
-                            {portraits.map((portrait) => (
+
+                        {/* Static Image 2 */}
+                        <div
+                            className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
+                            onClick={() => openFullscreen("/images/img2.jpeg")}
+                        >
+                            <div className="relative overflow-hidden rounded-xl">
+                                <Image
+                                    src="/images/img2.jpeg"
+                                    alt="Portrait"
+                                    width={500}
+                                    height={600}
+                                    className="w-full h-auto transition-transform duration-500 ease-out group-hover:scale-105"
+                                />
+                                {/* Fullscreen Icon on Hover */}
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                    <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out shadow-lg">
+                                        <svg
+                                            className="w-6 h-6 text-gray-900"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={2}
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Dynamic Portraits from Database */}
+                        {portraits.length === 0 ? null : (
+                            portraits.map((portrait) => (
                                 <div
                                     key={portrait.id}
                                     className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
@@ -97,7 +163,12 @@ export default function Portraits() {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            ))
+                        )}
+                    </div>
+                    {portraits.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                            No additional portraits found. Add portraits from the admin panel.
                         </div>
                     )}
                 </div>
