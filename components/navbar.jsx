@@ -22,6 +22,8 @@ export default function Navbar() {
   const menuItems = [
     { name: 'HOME', href: '/' },
     { name: 'PROJECTS', href: '/projects' },
+    { name: 'DOCUMENTARIES', href: '/documentaries' },
+    { name: 'VIDEO REPORTS', href: '/video-reports' },
     { name: 'AWARDS', href: '/awards' },
     { name: 'PORTRAITS', href: '/portraits' },
     { name: 'TEARSHEETS', href: '/tearsheets' },
@@ -49,7 +51,7 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Menu - Right Side */}
-            <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+            <div className="hidden md:flex items-center space-x-4 lg:space-x-5">
               {menuItems.map((item) => (
                 <Link
                   key={item.name}
