@@ -87,21 +87,6 @@ export default function VideoReports2() {
                                                     ) : (
                                                         <div className="w-full h-full bg-gray-800" />
                                                     )}
-                                                    {/* Video Overlay with gradient */}
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
-                                                        {/* Play Button */}
-                                                        <div className="absolute inset-0 flex items-center justify-center">
-                                                            <div className="w-16 h-16 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center group-hover:bg-red-700 group-hover:scale-110 transition-all duration-300 shadow-2xl">
-                                                                <svg
-                                                                    className="w-8 h-8 md:w-10 md:h-10 text-white ml-1"
-                                                                    fill="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path d="M8 5v14l11-7z" />
-                                                                </svg>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                             )}
                                         </div>
