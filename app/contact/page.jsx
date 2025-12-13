@@ -127,7 +127,7 @@ export default function Contact() {
             {/* Header Section */}
             <section className="py-10 md:py-10 px-6 md:px-8 ">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl tracking-tight mb-5 uppercase">
+                    <h1 className="text-4xl md:text-5xl tracking-tight mb-2 md:mb-5 uppercase">
                         {contactInfo.title || "Get In Touch"}
                     </h1>
                     {/* <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">

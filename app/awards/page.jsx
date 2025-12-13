@@ -76,7 +76,7 @@ export default function Awards() {
             {/* Header Section */}
             <section className="py-10 md:py-10 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl  mb-5 tracking-wide uppercase leading-tight">
+                    <h1 className="text-4xl md:text-5xl  mb-2 md:mb-5 tracking-wide uppercase leading-tight">
                         Awards, Nominations & Honours
                     </h1>
                     {/* <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
