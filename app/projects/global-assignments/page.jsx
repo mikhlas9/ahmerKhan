@@ -44,7 +44,7 @@ export default function GlobalAssignments() {
             {/* Header Section */}
             <section className="py-10 md:py-16 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 uppercase">
+                    <h1 className="text-4xl md:text-5xl tracking-tight mb-6 uppercase">
                         Global Assignments
                     </h1>
                     <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
@@ -73,7 +73,7 @@ export default function GlobalAssignments() {
                                     <div className="w-full md:w-2/3 bg-[#fdfdfd] p-8 md:p-12 lg:p-16 flex flex-col justify-between order-1 md:order-2">
                                         <div className="space-y-6">
                                             {/* Main Headline */}
-                                            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tight leading-tight text-gray-900">
+                                            <h2 className="text-2xl md:text-3xl lg:text-4xl uppercase tracking-tight leading-tight text-gray-900">
                                                 {assignment.title}
                                             </h2>
 
@@ -99,7 +99,7 @@ export default function GlobalAssignments() {
                                                 href={assignment.readMoreLink}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="group relative inline-block bg-gray-800 text-white text-sm font-bold uppercase tracking-wide hover:bg-gray-900 transition-all duration-500 ease-in-out"
+                                                className="group relative inline-block bg-gray-800 text-white text-sm uppercase tracking-wide hover:bg-gray-900 transition-all duration-500 ease-in-out"
                                             >
                                                 <span className="flex items-center gap-3 px-8 py-3 transition-all duration-500 ease-in-out group-hover:pr-14">
                                                     <span>READ MORE</span>

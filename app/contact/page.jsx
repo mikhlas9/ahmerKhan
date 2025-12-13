@@ -125,14 +125,14 @@ export default function Contact() {
   return (
     <main className="min-h-screen bg-white text-black ">
             {/* Header Section */}
-            <section className="py-10 md:py-16 px-6 md:px-8 ">
+            <section className="py-10 md:py-10 px-6 md:px-8 ">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 uppercase">
+                    <h1 className="text-4xl md:text-5xl tracking-tight mb-5 uppercase">
                         {contactInfo.title || "Get In Touch"}
                     </h1>
-                    <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
+                    {/* <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
                         {contactInfo.description || "Available for editorial assignments, documentary projects, and speaking engagements. Let's collaborate on telling important stories."}
-                    </p>
+                    </p> */}
           </div>
             </section>
 
@@ -143,7 +143,7 @@ export default function Contact() {
                         {/* Contact Information - Left Side */}
                         <div className="space-y-8">
                             <div className="bg-[#ececf3] p-8 md:p-10 rounded-2xl">
-                                <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-tight">
+                                <h2 className="text-2xl md:text-3xl mb-8 uppercase tracking-tight">
                                     Contact Information
                                 </h2>
 
@@ -284,7 +284,7 @@ export default function Contact() {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="group relative inline-block bg-gray-900 text-white text-sm font-bold uppercase tracking-wide hover:bg-gray-800 transition-all duration-500 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="group relative inline-block bg-gray-900 text-white text-sm uppercase tracking-wide hover:bg-gray-800 transition-all duration-500 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span className="flex items-center gap-3 px-8 py-4 transition-all duration-500 ease-in-out group-hover:pr-14">
                                         <span>{isSubmitting ? "Sending..." : "Send Message"}</span>

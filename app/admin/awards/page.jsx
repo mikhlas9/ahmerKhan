@@ -2,15 +2,11 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
-import ImageUpload from "@/components/ImageUpload"
-import { getAwards, createAward, updateAward, deleteAward, AWARD_TYPES } from "@/lib/awards"
-import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/storage"
+import { getAwards, createAward, updateAward, deleteAward } from "@/lib/awards"
 import Toast from "@/components/Toast"
 
 function AdminAwards() {
-  const [awards, setAwards] = useState([])
-  const [recognitionAwards, setRecognitionAwards] = useState([])
-  const [selectedType, setSelectedType] = useState(AWARD_TYPES.AWARD)
+  const [allAwards, setAllAwards] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState(null)
   const [message, setMessage] = useState({ type: "", text: "" })
@@ -22,16 +18,11 @@ function AdminAwards() {
     title: "",
     outlet: "",
     description: "",
-    quote: "",
-    attribution: "",
-    image: "",
-    videoUrl: "",
-    videoThumbnail: "",
     status: "",
-    type: AWARD_TYPES.AWARD,
-    order: 0,
-    mediaType: "image" // "image" or "video"
+    links: [], // Array of URLs
+    order: 0
   })
+  const [linkInput, setLinkInput] = useState("")
 
   useEffect(() => {
     loadAwards()
@@ -40,12 +31,9 @@ function AdminAwards() {
   async function loadAwards() {
     setLoading(true)
     try {
-      const [awardsData, recognitionData] = await Promise.all([
-        getAwards(AWARD_TYPES.AWARD),
-        getAwards(AWARD_TYPES.RECOGNITION)
-      ])
-      setAwards(awardsData)
-      setRecognitionAwards(recognitionData)
+      // Get all awards without filtering by type
+      const allAwardsData = await getAwards()
+      setAllAwards(allAwardsData)
     } catch (error) {
       setMessage({ type: "error", text: "Failed to load awards" })
     } finally {
@@ -54,86 +42,60 @@ function AdminAwards() {
   }
 
   function handleEdit(award) {
-    // Determine media type based on what exists
-    const mediaType = award.videoUrl ? "video" : "image"
-    
     setFormData({
       year: award.year || "",
       award: award.award || "",
       title: award.title || "",
       outlet: award.outlet || "",
       description: award.description || "",
-      quote: award.quote || "",
-      attribution: award.attribution || "",
-      image: award.image || "",
-      videoUrl: award.videoUrl || "",
-      videoThumbnail: award.videoThumbnail || "",
       status: award.status || "",
-      type: award.type || AWARD_TYPES.AWARD,
-      order: award.order || 0,
-      mediaType: mediaType
+      links: award.links || [],
+      order: award.order || 0
     })
     setEditingId(award.id)
-    setSelectedType(award.type)
     setShowForm(true)
+    setLinkInput("")
   }
 
   function handleNew() {
+    // Auto-suggest next order number (max order + 1, or 1 if empty)
+    const validOrders = allAwards
+      .map(a => a.order || 0)
+      .filter(order => order >= 1) // Only consider orders >= 1
+    const maxOrder = validOrders.length > 0 
+      ? Math.max(...validOrders)
+      : 0
+    const nextOrder = maxOrder + 1
+    
     setFormData({
       year: "",
       award: "",
       title: "",
       outlet: "",
       description: "",
-      quote: "",
-      attribution: "",
-      image: "",
-      videoUrl: "",
-      videoThumbnail: "",
       status: "",
-      type: selectedType,
-      order: 0,
-      mediaType: "image"
+      links: [],
+      order: nextOrder
     })
     setEditingId(null)
     setShowForm(true)
+    setLinkInput("")
   }
 
-  // Handle media type change (image or video)
-  const handleMediaTypeChange = (newType) => {
-    if (newType === "image") {
-      // Clear video fields when switching to image
+  function handleAddLink() {
+    if (linkInput.trim()) {
       setFormData(prev => ({
         ...prev,
-        mediaType: "image",
-        videoUrl: "",
-        videoThumbnail: ""
+        links: [...(prev.links || []), linkInput.trim()]
       }))
-    } else {
-      // Clear image field when switching to video
-      setFormData(prev => ({
-        ...prev,
-        mediaType: "video",
-        image: ""
-      }))
+      setLinkInput("")
     }
   }
 
-  // Handle video URL change and auto-fill thumbnail
-  const handleVideoUrlChange = (url) => {
-    const videoId = extractYouTubeVideoId(url)
-    let thumbnailUrl = ""
-    
-    if (videoId) {
-      thumbnailUrl = getYouTubeThumbnailUrl(videoId)
-    }
-    
+  function handleRemoveLink(index) {
     setFormData(prev => ({
       ...prev,
-      videoUrl: url,
-      videoThumbnail: thumbnailUrl,
-      // Also set image to thumbnail URL for display
-      image: thumbnailUrl
+      links: prev.links.filter((_, i) => i !== index)
     }))
   }
 
@@ -141,20 +103,7 @@ function AdminAwards() {
     e.preventDefault()
     setMessage({ type: "", text: "" })
 
-    // Prepare data based on media type
     const dataToSave = { ...formData }
-    
-    if (dataToSave.mediaType === "image") {
-      // Clear video fields if image is selected
-      dataToSave.videoUrl = ""
-      dataToSave.videoThumbnail = ""
-    } else {
-      // Clear image field if video is selected
-      dataToSave.image = ""
-    }
-    
-    // Remove mediaType from data (not needed in database)
-    delete dataToSave.mediaType
 
     const result = editingId
       ? await updateAward(editingId, dataToSave)
@@ -182,8 +131,6 @@ function AdminAwards() {
     }
   }
 
-  const currentAwards = selectedType === AWARD_TYPES.AWARD ? awards : recognitionAwards
-
   return (
     <div className="min-h-screen bg-gray-50 p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -193,7 +140,7 @@ function AdminAwards() {
 
         <div className="bg-white rounded-lg shadow p-6 md:p-8 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Awards</h1>
-          <p className="text-gray-600">Add, edit, and delete your awards and recognition</p>
+          <p className="text-gray-600">Add, edit, and delete your awards</p>
         </div>
 
         {/* Toast Notification */}
@@ -211,18 +158,7 @@ function AdminAwards() {
         )}
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value={AWARD_TYPES.AWARD}>Main Awards</option>
-                <option value={AWARD_TYPES.RECOGNITION}>Recognition</option>
-              </select>
-            </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4 mb-6">
             <button
               onClick={handleNew}
               className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
@@ -275,26 +211,14 @@ function AdminAwards() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status (for Recognition)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <input
                     type="text"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    placeholder="e.g., Finalist"
+                    placeholder="e.g., Finalist, Nomination"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  >
-                    <option value={AWARD_TYPES.AWARD}>Main Award</option>
-                    <option value={AWARD_TYPES.RECOGNITION}>Recognition</option>
-                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
@@ -303,7 +227,11 @@ function AdminAwards() {
                     value={formData.order}
                     onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    min="1"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Lower numbers appear first. Awards are displayed in order.
+                  </p>
                 </div>
               </div>
 
@@ -317,103 +245,58 @@ function AdminAwards() {
                 />
               </div>
 
+              {/* Links Section */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quote</label>
-                <textarea
-                  value={formData.quote}
-                  onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
-                  rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Attribution</label>
-                <input
-                  type="text"
-                  value={formData.attribution}
-                  onChange={(e) => setFormData({ ...formData, attribution: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              {/* Media Type Selection */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Media Type *</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Links</label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
                     <input
-                      type="radio"
-                      value="image"
-                      checked={formData.mediaType === "image"}
-                      onChange={(e) => handleMediaTypeChange("image")}
-                      className="mr-2"
+                      type="url"
+                      value={linkInput}
+                      onChange={(e) => setLinkInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddLink()
+                        }
+                      }}
+                      placeholder="https://example.com"
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
-                    Image
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="video"
-                      checked={formData.mediaType === "video"}
-                      onChange={(e) => handleMediaTypeChange("video")}
-                      className="mr-2"
-                    />
-                    Video
-                  </label>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Choose either image or video, not both.</p>
-              </div>
-
-              {/* Image Upload (shown when image is selected) */}
-              {formData.mediaType === "image" && (
-                <div className="mb-4">
-                  <ImageUpload
-                    value={formData.image}
-                    onChange={(url) => setFormData({ ...formData, image: url })}
-                    folder="awards"
-                    label="Image *"
-                    placeholder="/images/a1.png"
-                  />
-                </div>
-              )}
-
-              {/* Video Fields (shown when video is selected) */}
-              {formData.mediaType === "video" && (
-                <div className="space-y-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Video URL *</label>
-                    <input
-                      type="text"
-                      value={formData.videoUrl}
-                      onChange={(e) => handleVideoUrlChange(e.target.value)}
-                      placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Enter a YouTube URL. The thumbnail will be automatically generated.
-                    </p>
+                    <button
+                      type="button"
+                      onClick={handleAddLink}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                    >
+                      Add Link
+                    </button>
                   </div>
-                  {formData.videoThumbnail && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Video Thumbnail (Auto-generated)</label>
-                      <div className="relative w-full max-w-md border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                        <div className="relative aspect-video w-full">
-                          <img
-                            src={formData.videoThumbnail}
-                            alt="Video thumbnail"
-                            className="w-full h-full object-cover"
-                          />
+                  {formData.links && formData.links.length > 0 && (
+                    <div className="space-y-1">
+                      {formData.links.map((link, index) => (
+                        <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
+                          <a
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 text-sm text-blue-600 hover:text-blue-800 truncate"
+                          >
+                            {link}
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveLink(index)}
+                            className="text-red-600 hover:text-red-800 text-sm cursor-pointer"
+                          >
+                            Remove
+                          </button>
                         </div>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        This thumbnail is automatically generated from the YouTube video URL and will be used as the image.
-                      </p>
+                      ))}
                     </div>
                   )}
                 </div>
-              )}
+              </div>
+
 
               <div className="flex gap-3">
                 <button
@@ -438,25 +321,26 @@ function AdminAwards() {
 
           {loading ? (
             <div className="text-center py-12 text-gray-500">Loading awards...</div>
-          ) : currentAwards.length === 0 ? (
+          ) : allAwards.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              No awards found in this category. Use the migration script to initialize with default data.
+              No awards found. Use the migration script to initialize with default data.
             </div>
           ) : (
             <div className="space-y-4">
-              {currentAwards.map((award) => (
+              {allAwards.map((award) => (
                 <div key={award.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{award.year} - {award.award}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">Order: {award.order || 0}</span>
+                        <h3 className="font-semibold text-gray-900">{award.year || ''} {award.year && '-'} {award.award}</h3>
+                      </div>
                       {award.title && <p className="text-sm text-gray-600 mt-1">{award.title}</p>}
                       {award.outlet && <p className="text-xs text-gray-500 mt-1">{award.outlet}</p>}
-                      <div className="mt-2 flex gap-2">
-                        {award.image && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Image</span>}
-                        {award.videoUrl && <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Video</span>}
-                        {award.quote && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Quote</span>}
-                        <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">{award.type}</span>
-                      </div>
+                      {award.status && <p className="text-xs text-gray-500 mt-1">Status: {award.status}</p>}
+                      {award.links && award.links.length > 0 && (
+                        <p className="text-xs text-blue-600 mt-1">{award.links.length} link(s)</p>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <button

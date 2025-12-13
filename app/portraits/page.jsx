@@ -43,14 +43,14 @@ export default function Portraits() {
   return (
     <main className="min-h-screen bg-white text-black">
             {/* Header Section */}
-            <section className="py-10 md:py-16 px-6 md:px-8">
+            <section className="py-10 md:py-10 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-wide uppercase leading-tight">
+                    <h1 className="text-4xl md:text-5xl mb-5 tracking-wide uppercase leading-tight">
                         Portraits
                     </h1>
-                    <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
+                    {/* <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
                         A collection of portrait work documenting lives affected by conflict and humanitarian challenges. These portraits capture the human stories at the heart of investigative journalism.
-                    </p>
+                    </p> */}
                 </div>
             </section>
 
@@ -169,7 +169,7 @@ export default function Portraits() {
                                                 </svg>
                                             </div>
                                         </div>
-                                        <h3 className="text-white text-xl md:text-2xl font-bold uppercase tracking-wide text-center px-4 drop-shadow-2xl">
+                                        <h3 className="text-white text-xl md:text-2xl uppercase tracking-wide text-center px-4 drop-shadow-2xl">
                                             {country.name}
                                         </h3>
                                     </div>

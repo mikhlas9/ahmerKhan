@@ -40,7 +40,7 @@ export default function FilmsDocumentaries() {
             {/* Header Section */}
             <section className="py-10 md:py-16 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 uppercase">
+                    <h1 className="text-4xl md:text-5xl tracking-tight mb-6 uppercase">
                         Films & Documentaries
                     </h1>
                     <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
@@ -68,7 +68,7 @@ export default function FilmsDocumentaries() {
                                     {/* Content */}
                                     <div className="w-full md:w-3/5 flex flex-col justify-center space-y-4">
                                         <div className="space-y-2">
-                                            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tight leading-tight text-gray-900">
+                                            <h2 className="text-2xl md:text-3xl lg:text-4xl uppercase tracking-tight leading-tight text-gray-900">
                                                 {film.title}
                                             </h2>
                                             <div className="space-y-1">
