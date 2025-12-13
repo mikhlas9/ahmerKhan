@@ -47,14 +47,14 @@ export default function Documentaries() {
             </section>
 
             {/* Documentaries Grid - Card/Box Layout */}
-            <section className="pb-24 px-6 md:px-8">
-                <div className="max-w-7xl mx-auto">
+            <section className="pb-24 px-3 md:px-4">
+                <div className="max-w-6xl mx-auto">
                     {documentaries.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">
                             No documentaries found. Add documentaries from the admin panel.
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
                             {documentaries.map((doc) => {
                                 const videoId = getYouTubeVideoId(doc.videoUrl)
                                 
@@ -92,11 +92,11 @@ export default function Documentaries() {
                                         </div>
                                         
                                         {/* Text Content Box */}
-                                        <div className="p-6 md:p-8 space-y-3.5">
-                                            <p className="text-sm md:text-[15px] font-bold text-gray-900 uppercase tracking-wide">
+                                        <div className="p-4 md:p-5 space-y-2.5">
+                                            <p className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-wide">
                                                 {doc.outlet}
                                             </p>
-                                            <h3 className="text-[15px] md:text-lg font-normal text-gray-800 leading-[1.6]">
+                                            <h3 className="text-sm md:text-base font-normal text-gray-800 leading-[1.5]">
                                                 {doc.title}
                                             </h3>
                                         </div>

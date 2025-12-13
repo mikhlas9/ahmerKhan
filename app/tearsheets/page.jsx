@@ -38,9 +38,9 @@ export default function Tearsheets() {
   return (
     <main className="min-h-screen bg-white text-black">
             {/* Header Section */}
-            <section className="py-10 md:py-16 px-4 md:px-6 ">
+            <section className="py-10 md:py-10 px-4 md:px-6 ">
                 <div className="max-w-[1600px] mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 uppercase">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-wide uppercase leading-tight">
                         Tearsheets
                     </h1>
                     <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
@@ -50,8 +50,8 @@ export default function Tearsheets() {
             </section>
 
             {/* Tearsheets Gallery - CSS Columns Masonry */}
-            <section className="py-12 md:py-16 px-4 md:px-6 ">
-                <div className="max-w-[1600px] mx-auto">
+            <section className="pb-12 md:pb-16 px-4 md:px-6 ">
+                <div className="max-w-[1600px] mx-20">
                     {tearsheets.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">
                             No tearsheets found. Add tearsheets from the admin panel.

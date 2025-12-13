@@ -36,7 +36,7 @@ export default function Navbar() {
  return (
     <>
       <nav className="bg-white z-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-5">
+        <div className="w-full py-5 px-3 md:px-30">
           <div className="flex items-center justify-between w-full">
             {/* Left Side - Name and Subtitle */}
             <div className="flex flex-col">
@@ -66,7 +66,7 @@ export default function Navbar() {
             {/* Hamburger Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden pr-2 focus:outline-none"
+              className="md:hidden pr-1 focus:outline-none"
               aria-label="Toggle menu"
             >
               <div className="w-7 h-6 flex flex-col justify-center gap-1.5">

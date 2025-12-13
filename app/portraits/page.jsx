@@ -45,7 +45,7 @@ export default function Portraits() {
             {/* Header Section */}
             <section className="py-10 md:py-16 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 uppercase">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-wide uppercase leading-tight">
                         Portraits
                     </h1>
                     <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
@@ -109,8 +109,8 @@ export default function Portraits() {
             </section>
 
             {/* Country Projects Section with Curved Top */}
-            <section className="relative bg-[#f5f1e8] pb-24">
-                {/* Curved Top Border */}
+            {/* <section className="relative bg-[#f5f1e8] pb-24">
+
                 <div className="absolute top-0 left-0 right-0 overflow-hidden leading-none">
                     <svg
                         className="relative block w-full h-16 md:h-24"
@@ -127,7 +127,7 @@ export default function Portraits() {
 
                 <div className="pt-24 md:pt-32 px-6 md:px-8">
                     <div className="max-w-7xl mx-auto">
-                        {/* Country Cards Grid */}
+
                         {countryProjects.length === 0 ? (
                             <div className="text-center py-12 text-gray-500">
                                 No country projects found. Add projects from the admin panel.
@@ -146,12 +146,12 @@ export default function Portraits() {
                                         fill
                                         className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                                     />
-                                    {/* Gradient Overlay */}
+
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                                     
-                                    {/* Country Name with Search Icon on Hover */}
+
                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        {/* Search Icon - appears on hover above text */}
+
                                         <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out transform translate-y-4 group-hover:translate-y-0 mb-4">
                                             <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
                                                 <svg
@@ -174,7 +174,7 @@ export default function Portraits() {
                                         </h3>
                                     </div>
 
-                                    {/* Hover Border Effect */}
+
                                     <div className="absolute inset-0 border-4 border-white/0 group-hover:border-white/30 transition-all duration-500 rounded-2xl" />
                                 </div>
                                 ))}
@@ -182,7 +182,7 @@ export default function Portraits() {
                         )}
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* Fullscreen Image Modal */}
             {fullscreenImage && (
