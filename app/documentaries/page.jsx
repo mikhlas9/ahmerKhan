@@ -48,7 +48,7 @@ export default function Documentaries() {
 
             {/* Documentaries Grid - Card/Box Layout */}
             <section className="pb-24 px-3 md:px-4">
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-6xl mx-3 md:mx-auto">
                     {documentaries.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">
                             No documentaries found. Add documentaries from the admin panel.

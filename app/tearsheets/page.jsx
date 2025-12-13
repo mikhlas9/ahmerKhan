@@ -51,7 +51,7 @@ export default function Tearsheets() {
 
             {/* Tearsheets Gallery - CSS Columns Masonry */}
             <section className="pb-12 md:pb-16 px-4 md:px-6 ">
-                <div className="max-w-[1600px] mx-20">
+                <div className="max-w-[1600px] mx-auto md:mx-20">
                     {tearsheets.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">
                             No tearsheets found. Add tearsheets from the admin panel.

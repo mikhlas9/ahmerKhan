@@ -36,7 +36,7 @@ export default function Navbar() {
  return (
     <>
       <nav className="bg-white z-50 border-b border-gray-200">
-        <div className="w-full py-5 px-3 md:px-30">
+        <div className="w-full py-5 px-5 md:px-30">
           <div className="flex items-center justify-between w-full">
             {/* Left Side - Name and Subtitle */}
             <div className="flex flex-col">
