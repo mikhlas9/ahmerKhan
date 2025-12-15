@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { Twitter, Instagram, Linkedin, Mail } from 'lucide-react'
 import { getFooterData } from '@/lib/footer'
 
@@ -18,6 +19,7 @@ const iconMap = {
 }
 
 export default function Footer() {
+  const pathname = usePathname()
   const currentYear = new Date().getFullYear()
   const [footerData, setFooterData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -35,6 +37,11 @@ export default function Footer() {
     }
     fetchData()
   }, [])
+
+  // Hide footer on contact page
+  if (pathname === '/contact') {
+    return null
+  }
 
   // Fallback to default data if not loaded
   const socialLinks = footerData?.socialLinks || []

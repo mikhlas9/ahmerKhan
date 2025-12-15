@@ -6,6 +6,7 @@ import Link from 'next/link';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [homepageData, setHomepageData] = useState(null);
+  const [photosDropdownOpen, setPhotosDropdownOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -26,9 +27,14 @@ export default function Navbar() {
     { name: 'DOCUMENTARIES', href: '/documentaries' },
     { name: 'VIDEO REPORTS', href: '/video-reports' },
     { name: 'AWARDS', href: '/awards' },
-    { name: 'PORTRAITS', href: '/portraits' },
     { name: 'TEARSHEETS', href: '/tearsheets' },
     { name: 'CONTACT', href: '/contact' },
+  ];
+
+  const photosSubmenu = [
+    { name: 'STORIES', href: '/photos/stories' },
+    { name: 'SINGLES', href: '/photos/singles' },
+    { name: 'PORTRAITS', href: '/photos/portraits' },
   ];
 
   const name = homepageData?.name || 'AHMER KHAN';
@@ -42,7 +48,7 @@ export default function Navbar() {
             {/* Left Side - Name and Subtitle */}
             <div className="flex flex-col">
               <Link href="/" className="group">
-                <h1 className="text-2xl md:text-4xl  text-black tracking-wider uppercase leading-tight">
+                <h1 className="text-2xl md:text-4xl  text-black tracking-wider  leading-tight">
                   {name}
                 </h1>
                 <p className="text-[10px] md:text-sm text-gray-500 mt-1 font-normal leading-tight">
@@ -53,20 +59,61 @@ export default function Navbar() {
 
             {/* Desktop Menu - Right Side */}
             <div className="hidden md:flex items-center space-x-4 lg:space-x-5">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200"
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {menuItems.map((item) => {
+                const isVideoReports = item.name === 'VIDEO REPORTS'
+                return (
+                  <div key={item.name} className="flex items-center">
+                    <Link
+                      href={item.href}
+                      className="text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                    >
+                      {item.name}
+                    </Link>
+                    {/* Photos Dropdown - Insert after VIDEO REPORTS */}
+                    {isVideoReports && (
+                      <div 
+                        className="relative ml-4 lg:ml-5"
+                        onMouseEnter={() => setPhotosDropdownOpen(true)}
+                        onMouseLeave={() => setPhotosDropdownOpen(false)}
+                      >
+                        <button className="text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
+                          PHOTOS
+                        </button>
+                        <div 
+                          className={`absolute top-full left-0 transition-all duration-200 ease-in-out ${
+                            photosDropdownOpen 
+                              ? 'opacity-100 visible translate-y-0' 
+                              : 'opacity-0 invisible -translate-y-1 pointer-events-none'
+                          }`}
+                          style={{ paddingTop: '4px' }}
+                        >
+                          <div className="bg-white border border-gray-200 shadow-lg py-2 min-w-[150px] z-50">
+                            {photosSubmenu.map((subItem) => (
+                              <Link
+                                key={subItem.name}
+                                href={subItem.href}
+                                className="block px-4 py-2 text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                              >
+                                {subItem.name}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
 
             {/* Hamburger Button */}
             <button
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => {
+                setIsOpen(!isOpen)
+                if (isOpen) {
+                  setPhotosDropdownOpen(false)
+                }
+              }}
               className="md:hidden pr-1 focus:outline-none"
               aria-label="Toggle menu"
             >
@@ -100,7 +147,10 @@ export default function Navbar() {
       >
         {/* Close Button */}
         <button
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            setIsOpen(false)
+            setPhotosDropdownOpen(false)
+          }}
           className="absolute top-6 right-6 p-2 focus:outline-none z-50"
           aria-label="Close menu"
         >
@@ -111,26 +161,78 @@ export default function Navbar() {
         </button>
 
         <div
-          className={`flex flex-col items-center justify-center h-full space-y-8 transition-all duration-500 ${
+          className={`flex flex-col items-center justify-center h-full space-y-5 transition-all duration-300 ${
             isOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}
         >
-          {menuItems.map((item, index) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setIsOpen(false)}
-              className={`text-[20px] font-weight-400 text-gray-800 hover:text-gray-600 transition-all duration-300 ${
-                isOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-              }`}
-              style={{
-                transitionDelay: isOpen ? `${index * 50 + 150}ms` : '0ms',
-                fontFamily: 'Cabin, sans-serif'
-              }}
-            >
-              {item.name}
-            </Link>
-          ))}
+          {menuItems.map((item, index) => {
+            const isVideoReports = item.name === 'VIDEO REPORTS'
+            return (
+              <div key={item.name} className="flex flex-col items-center">
+                <Link
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className="text-[20px] font-weight-400 text-gray-800 hover:text-gray-600 transition-colors duration-200"
+                  style={{
+                    fontFamily: 'Cabin, sans-serif'
+                  }}
+                >
+                  {item.name}
+                </Link>
+                {/* Photos Dropdown - Insert after VIDEO REPORTS */}
+                {isVideoReports && (
+                  <div className="flex flex-col items-center space-y-3 mt-5">
+                    <button
+                      onClick={() => setPhotosDropdownOpen(!photosDropdownOpen)}
+                      className="flex items-center gap-2 text-[20px] font-weight-400 text-gray-800 hover:text-gray-600 transition-colors duration-200"
+                      style={{
+                        fontFamily: 'Cabin, sans-serif'
+                      }}
+                    >
+                      PHOTOS
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          photosDropdownOpen ? 'rotate-180' : 'rotate-0'
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                    <div
+                      className={`flex flex-col items-center space-y-3 overflow-hidden transition-all duration-300 ${
+                        photosDropdownOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      {photosSubmenu.map((subItem) => (
+                        <Link
+                          key={subItem.name}
+                          href={subItem.href}
+                          onClick={() => {
+                            setIsOpen(false)
+                            setPhotosDropdownOpen(false)
+                          }}
+                          className="text-[16px] font-weight-400 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                          style={{
+                            fontFamily: 'Cabin, sans-serif'
+                          }}
+                        >
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 

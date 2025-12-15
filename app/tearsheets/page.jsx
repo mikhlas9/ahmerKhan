@@ -57,11 +57,11 @@ export default function Tearsheets() {
                             No tearsheets found. Add tearsheets from the admin panel.
                         </div>
                     ) : (
-                        <div className="columns-1 md:columns-2 gap-4 md:gap-6">
+                        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-5 lg:gap-6">
                             {tearsheets.map((tearsheet) => (
                             <div
                                 key={tearsheet.id}
-                                className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
+                                className="break-inside-avoid mb-4 md:mb-5 lg:mb-6 cursor-pointer group relative"
                                 onClick={() => openFullscreen(tearsheet.src)}
                             >
                                 <div className="relative overflow-hidden rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-500 bg-white">
@@ -121,12 +121,12 @@ export default function Tearsheets() {
             {/* Fullscreen Image Modal */}
             {fullscreenImage && (
                 <div
-                    className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+                    className="fixed inset-0 z-50 bg-white flex items-center justify-center p-4"
                     onClick={closeFullscreen}
                 >
                     <button
                         onClick={closeFullscreen}
-                        className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10"
+                        className="absolute top-4 right-4 text-gray-900 hover:text-gray-600 transition-colors z-10 cursor-pointer"
                         aria-label="Close fullscreen"
                     >
                         <svg

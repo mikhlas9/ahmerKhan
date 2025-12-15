@@ -1,10 +1,27 @@
 "use client"
 import { useState, useEffect } from "react"
 import { getContactData } from "@/lib/contact"
+import { getFooterData } from "@/lib/footer"
+import { Twitter, Instagram, Linkedin, Mail } from 'lucide-react'
 import LoadingSpinner from "@/components/LoadingSpinner"
+
+// Icon mapping for social links
+const iconMap = {
+  'X (Twitter)': Twitter,
+  'Instagram': Instagram,
+  'LinkedIn': Linkedin,
+  'Vimeo': ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M23 7s-.2-1.4-.9-2c-.8-.8-1.7-.8-2.1-.9C17.3 4 12 4 12 4s-5.3 0-8 .1c-.4.1-1.3.1-2.1.9-.7.6-.9 2-.9 2S1 8.7 1 10.4v1.6c0 1.7.1 3.4.1 3.4s.2 1.4.9 2c.8.8 1.9.8 2.4.9 1.7.1 7.6.2 7.6.2s5.3 0 8-.2c.4-.1 1.3-.1 2.1-.9.7-.6.9-2 .9-2s.1-1.7.1-3.4v-1.6c0-1.7-.1-3.4-.1-3.4z"/>
+      <path d="m10 15 5.2-3L10 9v6z"/>
+    </svg>
+  ),
+  'Email': Mail,
+}
 
 export default function Contact() {
     const [contactInfo, setContactInfo] = useState(null)
+    const [footerData, setFooterData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [formData, setFormData] = useState({
         name: "",
@@ -16,19 +33,23 @@ export default function Contact() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [emailjsLoaded, setEmailjsLoaded] = useState(false)
 
-    // Load contact information
+    // Load contact information and footer data
     useEffect(() => {
-        async function fetchContactInfo() {
+        async function fetchData() {
             try {
-                const data = await getContactData()
-                setContactInfo(data)
+                const [contactData, footerDataResult] = await Promise.all([
+                    getContactData(),
+                    getFooterData()
+                ])
+                setContactInfo(contactData)
+                setFooterData(footerDataResult)
             } catch (error) {
-                console.error('Error loading contact info:', error)
+                console.error('Error loading data:', error)
             } finally {
                 setLoading(false)
             }
         }
-        fetchContactInfo()
+        fetchData()
     }, [])
 
     // Load EmailJS script
@@ -194,6 +215,39 @@ export default function Contact() {
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Social Links */}
+                                    {footerData?.socialLinks && footerData.socialLinks.filter(link => link.enabled).length > 0 && (
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center shrink-0">
+                                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                                </svg>
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="font-semibold text-gray-900 mb-3 uppercase text-sm tracking-wide">Social</h3>
+                                                <div className="flex gap-4 items-center">
+                                                    {footerData.socialLinks
+                                                        .filter(link => link.enabled)
+                                                        .map((social) => {
+                                                            const Icon = iconMap[social.name] || Mail
+                                                            return (
+                                                                <a
+                                                                    key={social.name}
+                                                                    href={social.href}
+                                                                    target={social.href.startsWith('http') ? '_blank' : undefined}
+                                                                    rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                                                    className="text-gray-600 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
+                                                                    aria-label={social.ariaLabel || social.name}
+                                                                >
+                                                                    <Icon className="w-5 h-5" />
+                                                                </a>
+                                                            )
+                                                        })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

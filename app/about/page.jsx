@@ -58,7 +58,7 @@ export default function About() {
             </section>
 
             {/* About Section */}
-            <section className="pb-24 px-6 md:px-8">
+            <section className="pb-12 md:pb-16 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-16">
                         {/* Photo on Left */}
@@ -94,6 +94,57 @@ export default function About() {
                                 )}
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Divider Line */}
+            <section className="px-6 md:px-8">
+                <div className="max-w-7xl mx-auto flex justify-center">
+                    <div className="border-t border-gray-300 w-full max-w-2xl"></div>
+                </div>
+            </section>
+
+            {/* Media Coverage Section */}
+            <section className="py-8 md:py-12 px-6 md:px-8">
+                <div className="max-w-7xl mx-auto">
+                    <h2 className="text-2xl md:text-3xl font-medium mb-6 text-black uppercase tracking-wide">
+                        MEDIA COVERAGE
+                    </h2>
+                    <div className="space-y-3">
+                        <a 
+                            href="https://www.livemint.com/mint-lounge/features/emmy-2020-meet-kashmiri-journalist-ahmer-khan-nominated-for-a-caa-documentary/amp-11600604947598.html"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between text-gray-900 text-base md:text-lg hover:text-gray-700 transition-colors cursor-pointer group"
+                        >
+                            <span>Mint, 2020</span>
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                        <a 
+                            href="https://www.theweek.in/leisure/society/2020/10/18/covering-other-humanitarian-stories-helped-me-process-the-trauma-of-jandk-my-homeland.html"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between text-gray-900 text-base md:text-lg hover:text-gray-700 transition-colors cursor-pointer group"
+                        >
+                            <span>The Week, 2020</span>
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                        <a 
+                            href="https://globalindiannetwork.com/indias-fake-news-crisis-with-ahmer-khan/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between text-gray-900 text-base md:text-lg hover:text-gray-700 transition-colors cursor-pointer group"
+                        >
+                            <span>Global Indian Network, 2020</span>
+                            <svg className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
                     </div>
                 </div>
             </section>
