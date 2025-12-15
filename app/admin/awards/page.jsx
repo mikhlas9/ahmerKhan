@@ -227,10 +227,10 @@ function AdminAwards() {
                     value={formData.order}
                     onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    min="1"
+                    min="0"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Lower numbers appear first. Awards are displayed in order.
+                    Lower numbers appear first. Awards are displayed in order (0 = first).
                   </p>
                 </div>
               </div>
@@ -332,14 +332,23 @@ function AdminAwards() {
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">Order: {award.order || 0}</span>
-                        <h3 className="font-semibold text-gray-900">{award.year || ''} {award.year && '-'} {award.award}</h3>
+                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">Order: {award.order !== undefined ? award.order : 0}</span>
+                        <h3 className="font-semibold text-gray-900">
+                          {(() => {
+                            let text = award.award || ''
+                            if (award.status) text += ` – ${award.status}`
+                            if (award.title) text += ` — ${award.title}`
+                            if (award.year) text += ` — ${award.year}`
+                            return text
+                          })()}
+                        </h3>
                       </div>
-                      {award.title && <p className="text-sm text-gray-600 mt-1">{award.title}</p>}
-                      {award.outlet && <p className="text-xs text-gray-500 mt-1">{award.outlet}</p>}
-                      {award.status && <p className="text-xs text-gray-500 mt-1">Status: {award.status}</p>}
+                      {award.outlet && <p className="text-xs text-gray-500 mt-1">Outlet: {award.outlet}</p>}
+                      {award.description && <p className="text-xs text-gray-500 mt-1">{award.description}</p>}
                       {award.links && award.links.length > 0 && (
-                        <p className="text-xs text-blue-600 mt-1">{award.links.length} link(s)</p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          {award.links.length} link(s): {award.links[0]}
+                        </p>
                       )}
                     </div>
                     <div className="flex gap-2">

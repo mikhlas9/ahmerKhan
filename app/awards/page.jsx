@@ -28,48 +28,31 @@ export default function Awards() {
         return <LoadingSpinner text="Loading" />
     }
 
-    // Helper function to render award links
-    const renderLinks = (links) => {
-        if (!links || links.length === 0) return null
-        const getLinkLabel = (url) => {
-            try {
-                const urlObj = new URL(url)
-                return urlObj.hostname.replace('www.', '')
-            } catch {
-                return 'Link'
-            }
+    // Get the first link if available
+    const getFirstLink = (item) => {
+        if (item.links && item.links.length > 0) {
+            return item.links[0]
         }
+        return null
+    }
+
+    // Render award content
+    const renderAwardContent = (item) => {
         return (
-            <div className="mt-3 flex flex-wrap gap-2">
-                {links.map((link, idx) => (
-                    <a
-                        key={idx}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-sm text-gray-700 hover:text-gray-900 border-b border-gray-300 hover:border-gray-600 transition-colors"
-                    >
-                        {getLinkLabel(link)}
-                        <svg className="ml-1.5 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                    </a>
-                ))}
-            </div>
+            <>
+                <span className="font-medium">{item.award}</span>
+                {item.status && (
+                    <span className="font-normal text-gray-700"> – {item.status}</span>
+                )}
+                {item.title && (
+                    <span className="font-normal text-gray-700"> — {item.title}</span>
+                )}
+                {item.year && (
+                    <span className="font-normal text-gray-700"> — {item.year}</span>
+                )}
+            </>
         )
     }
-
-    // Helper function to split items into columns
-    const splitIntoColumns = (items, numColumns = 3) => {
-        const columns = Array.from({ length: numColumns }, () => [])
-        items.forEach((item, index) => {
-            columns[index % numColumns].push(item)
-        })
-        return columns
-    }
-
-
-    const columns = splitIntoColumns(allAwards, 3)
 
     return (
         <main className="min-h-screen bg-white text-black">
@@ -79,9 +62,6 @@ export default function Awards() {
                     <h1 className="text-4xl md:text-5xl  mb-2 md:mb-5 tracking-wide uppercase leading-tight">
                         Awards, Nominations & Honours
                     </h1>
-                    {/* <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
-                        Honored for outstanding journalism and storytelling that brings critical stories to light
-                    </p> */}
                 </div>
             </section>
 
@@ -91,42 +71,33 @@ export default function Awards() {
                     {allAwards.length === 0 ? (
                         <p className="text-center text-gray-500">No awards found.</p>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                            {columns.map((column, colIdx) => (
-                                <div key={colIdx} className="space-y-6">
-                                    {column.map((item, idx) => (
-                                        <div key={item.id || idx} className="space-y-1.5">
-                                            <div className="text-gray-900 font-medium text-sm md:text-base leading-tight">
-                                                {item.award}
-                                                {item.status && (
-                                                    <span className="text-gray-600"> - {item.status}</span>
-                                                )}
-                                            </div>
-                                            {item.title && (
-                                                <div className="text-sm text-gray-700 italic mt-1 leading-relaxed">
-                                                    {item.title}
-                                                </div>
-                                            )}
-                                            {item.outlet && (
-                                                <div className="text-sm text-gray-600 mt-1">
-                                                    {item.outlet}
-                                                </div>
-                                            )}
-                                            {item.year && (
-                                                <div className="text-sm text-gray-600 mt-1">
-                                                    {item.year}
-                                                </div>
-                                            )}
-                                            {item.description && (
-                                                <div className="text-sm text-gray-600 mt-2 leading-relaxed">
-                                                    {item.description}
-                                                </div>
-                                            )}
-                                            {item.links && item.links.length > 0 && renderLinks(item.links)}
+                        <div className="space-y-4">
+                            {allAwards.map((item, idx) => {
+                                const link = getFirstLink(item)
+                                
+                                if (link) {
+                                    return (
+                                        <div key={item.id || idx} className="border-b border-gray-200 pb-4">
+                                            <a
+                                                href={link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-gray-900 text-sm md:text-base leading-tight hover:text-gray-600 transition-colors cursor-pointer block"
+                                            >
+                                                {renderAwardContent(item)}
+                                            </a>
                                         </div>
-                                    ))}
-                                </div>
-                            ))}
+                                    )
+                                } else {
+                                    return (
+                                        <div key={item.id || idx} className="border-b border-gray-200 pb-4">
+                                            <div className="text-gray-900 text-sm md:text-base leading-tight">
+                                                {renderAwardContent(item)}
+                                            </div>
+                                        </div>
+                                    )
+                                }
+                            })}
                         </div>
                     )}
                 </div>
