@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import { getVideoReports, createVideoReport, updateVideoReport, deleteVideoReport } from "@/lib/video-reports"
@@ -12,6 +12,9 @@ function AdminVideoReports() {
   const [editingId, setEditingId] = useState(null)
   const [message, setMessage] = useState({ type: "", text: "" })
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+  const formRef = useRef(null)
 
   const [formData, setFormData] = useState({
     outlet: "",
@@ -47,6 +50,10 @@ function AdminVideoReports() {
     })
     setEditingId(report.id)
     setShowForm(true)
+    // Scroll to form after state update
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   function handleNew() {
@@ -68,6 +75,10 @@ function AdminVideoReports() {
     })
     setEditingId(null)
     setShowForm(true)
+    // Scroll to form after state update
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   // Handle video URL change and auto-fill thumbnail
@@ -88,13 +99,16 @@ function AdminVideoReports() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    setSaving(true)
     setMessage({ type: "", text: "" })
 
     if (!formData.outlet || !formData.title || !formData.videoUrl) {
       setMessage({ type: "error", text: "Please fill in all required fields" })
+      setSaving(false)
       return
     }
 
+    try {
     const result = editingId
       ? await updateVideoReport(editingId, formData)
       : await createVideoReport(formData)
@@ -106,18 +120,26 @@ function AdminVideoReports() {
       loadVideoReports()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to save video report" })
+      }
+    } finally {
+      setSaving(false)
     }
   }
 
   async function handleDelete(id) {
     if (!confirm("Are you sure you want to delete this video report?")) return
 
+    setDeletingId(id)
+    try {
     const result = await deleteVideoReport(id)
     if (result.success) {
       setMessage({ type: "success", text: "Updated" })
       loadVideoReports()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to delete video report" })
+      }
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -161,7 +183,7 @@ function AdminVideoReports() {
           </div>
 
           {showForm && (
-            <form onSubmit={handleSubmit} className="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
+            <form ref={formRef} onSubmit={handleSubmit} className="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
               <h2 className="text-xl font-semibold mb-4">{editingId ? "Edit Video Report" : "New Video Report"}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -241,8 +263,15 @@ function AdminVideoReports() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                  disabled={saving}
+                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
+                  {saving && (
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
                   {editingId ? "Update Video Report" : "Create Video Report"}
                 </button>
                 <button
@@ -251,7 +280,8 @@ function AdminVideoReports() {
                     setShowForm(false)
                     setEditingId(null)
                   }}
-                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
+                  disabled={saving}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
@@ -287,8 +317,15 @@ function AdminVideoReports() {
                       </button>
                       <button
                         onClick={() => handleDelete(report.id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm cursor-pointer"
+                        disabled={deletingId === report.id}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
+                        {deletingId === report.id && (
+                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        )}
                         Delete
                       </button>
                     </div>

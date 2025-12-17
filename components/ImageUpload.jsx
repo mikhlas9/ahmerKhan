@@ -20,7 +20,8 @@ export default function ImageUpload({
   folder = "images", 
   label = "Image",
   placeholder = "/images/image.png",
-  id = null
+  id = null,
+  onUploadingChange = null
 }) {
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState(value || "")
@@ -51,6 +52,7 @@ export default function ImageUpload({
 
     setError("")
     setUploading(true)
+    if (onUploadingChange) onUploadingChange(true)
 
     try {
       // Show local preview immediately
@@ -75,6 +77,7 @@ export default function ImageUpload({
       setPreview(value || "")
     } finally {
       setUploading(false)
+      if (onUploadingChange) onUploadingChange(false)
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ""

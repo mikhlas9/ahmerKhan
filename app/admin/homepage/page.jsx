@@ -1,7 +1,7 @@
 "use client"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
-import { useState, useEffect } from "react"
-import { getHomepageData, saveHomepageData, initializeHomepage } from "@/lib/homepage"
+import { useState, useEffect, useRef } from "react"
+import { getHomepageData, saveHomepageData } from "@/lib/homepage"
 import { useRouter } from "next/navigation"
 import ImageUpload from "@/components/ImageUpload"
 import Toast from "@/components/Toast"
@@ -10,13 +10,12 @@ function HomepageAdmin() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState({ type: "", text: "" })
+  const formRef = useRef(null)
   const [formData, setFormData] = useState({
-    name: "",
-    title: "",
-    bio: [""], // Array of paragraphs
-    credentials: "",
-    portraitImage: ""
+    mediaType: "image", // "image" or "video"
+    mediaUrl: ""
   })
 
   useEffect(() => {
@@ -25,11 +24,14 @@ function HomepageAdmin() {
         const data = await getHomepageData()
         if (data) {
           setFormData({
-            name: data.name || "",
-            title: data.title || "",
-            bio: Array.isArray(data.bio) ? data.bio : [data.bio || ""],
-            credentials: data.credentials || "",
-            portraitImage: data.portraitImage || ""
+            mediaType: data.mediaType || "image",
+            mediaUrl: data.mediaUrl || "/images/home.jpeg"
+          })
+        } else {
+          // Initialize with default
+          setFormData({
+            mediaType: "image",
+            mediaUrl: "/images/home.jpeg"
           })
         }
       } catch (error) {
@@ -49,41 +51,17 @@ function HomepageAdmin() {
     }))
   }
 
-  const handleBioChange = (index, value) => {
-    setFormData(prev => ({
-      ...prev,
-      bio: prev.bio.map((para, i) => i === index ? value : para)
-    }))
-  }
-
-  const addBioParagraph = () => {
-    setFormData(prev => ({
-      ...prev,
-      bio: [...prev.bio, ""]
-    }))
-  }
-
-  const removeBioParagraph = (index) => {
-    if (formData.bio.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        bio: prev.bio.filter((_, i) => i !== index)
-      }))
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (uploading) return
+    
     setSaving(true)
     setMessage({ type: "", text: "" })
 
     try {
-      // Filter out empty bio paragraphs
-      const bioToSave = formData.bio.filter(para => para.trim() !== "")
-      
       const result = await saveHomepageData({
-        ...formData,
-        bio: bioToSave
+        mediaType: formData.mediaType,
+        mediaUrl: formData.mediaUrl
       })
 
       if (result.success) {
@@ -95,19 +73,6 @@ function HomepageAdmin() {
       setMessage({ type: "error", text: error.message || "An error occurred" })
     } finally {
       setSaving(false)
-    }
-  }
-
-  const handleInitialize = async () => {
-    if (confirm("This will initialize the homepage with default data. Continue?")) {
-      const result = await initializeHomepage()
-      if (result.success) {
-        setMessage({ type: "success", text: "Updated" })
-        // Reload the form
-        window.location.reload()
-      } else {
-        setMessage({ type: "error", text: result.message || result.error })
-      }
     }
   }
 
@@ -131,7 +96,7 @@ function HomepageAdmin() {
             ← Back to Dashboard
           </button>
           <h1 className="text-3xl font-bold text-gray-900">Edit Homepage</h1>
-          <p className="text-gray-600 mt-2">Update your name, title, bio, and credentials</p>
+          <p className="text-gray-600 mt-2">Upload an image or video to display on the homepage</p>
         </div>
 
         {/* Toast Notification */}
@@ -148,127 +113,105 @@ function HomepageAdmin() {
           </div>
         )}
 
-        {/* Initialize Button (if no data exists) */}
-        {formData.name === "" && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 mb-3">No homepage data found. Initialize with default data?</p>
-            <button
-              onClick={handleInitialize}
-              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 cursor-pointer"
-            >
-              Initialize Homepage
-            </button>
-          </div>
-        )}
-
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
-          {/* Name */}
+        <form ref={formRef} onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+          {/* Media Type Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Name *
+              Media Type *
             </label>
+            <div className="flex gap-4">
+              <label className="flex items-center">
             <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-              required
+                  type="radio"
+                  value="image"
+                  checked={formData.mediaType === "image"}
+                  onChange={(e) => handleInputChange("mediaType", e.target.value)}
+                  className="mr-2"
             />
-          </div>
-
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title/Subtitle *
+                <span>Image</span>
             </label>
+              <label className="flex items-center">
             <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-              placeholder="e.g., Filmmaker & Investigative Journalist"
-              required
+                  type="radio"
+                  value="video"
+                  checked={formData.mediaType === "video"}
+                  onChange={(e) => handleInputChange("mediaType", e.target.value)}
+                  className="mr-2"
             />
-          </div>
-
-          {/* Bio Paragraphs */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bio (Each paragraph will appear on a new line) *
+                <span>Video</span>
             </label>
-            <div className="space-y-3">
-              {formData.bio.map((paragraph, index) => (
-                <div key={index} className="flex gap-2">
-                  <textarea
-                    value={paragraph}
-                    onChange={(e) => handleBioChange(index, e.target.value)}
-                    rows={3}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                    placeholder={`Paragraph ${index + 1}`}
-                  />
-                  {formData.bio.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeBioParagraph(index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
-                    >
-                      Remove
-                    </button>
-                  )}
                 </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={addBioParagraph}
-              className="mt-3 px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer"
-            >
-              + Add Paragraph
-            </button>
-            <p className="mt-2 text-xs text-gray-500">
-              Each paragraph will be displayed on a separate line. Add multiple paragraphs for better formatting.
+            <p className="text-xs text-gray-500 mt-1">
+              Select whether to display an image or video on the homepage. Videos will autoplay when the page loads.
             </p>
           </div>
 
-          {/* Credentials */}
+          {/* Media Upload */}
+          {formData.mediaType === "image" ? (
+            <div>
+              <ImageUpload
+                value={formData.mediaUrl}
+                onChange={(url) => handleInputChange("mediaUrl", url)}
+                folder="homepage"
+                label="Homepage Image"
+                placeholder="/images/home.jpeg"
+                onUploadingChange={setUploading}
+              />
+            </div>
+          ) : (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Credentials
+                Video URL *
             </label>
             <input
               type="text"
-              value={formData.credentials}
-              onChange={(e) => handleInputChange("credentials", e.target.value)}
+                value={formData.mediaUrl}
+                onChange={(e) => handleInputChange("mediaUrl", e.target.value)}
+                placeholder="https://example.com/video.mp4 or /videos/video.mp4"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-              placeholder="e.g., Emmy nominated | Al Jazeera | BBC | DCE Director"
-            />
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter the URL or path to the video file. The video will autoplay, loop, and be muted when the page loads.
+              </p>
+              {formData.mediaUrl && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600 mb-2">Video Preview:</p>
+                  <div className="relative w-full max-w-2xl aspect-video border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                    <video
+                      src={formData.mediaUrl}
+                      controls
+                      className="w-full h-full object-contain"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
           </div>
-
-          {/* Portrait Image */}
-          <div>
-            <ImageUpload
-              value={formData.portraitImage}
-              onChange={(url) => handleInputChange("portraitImage", url)}
-              folder="homepage"
-              label="Portrait Image"
-              placeholder="/images/image.png"
-            />
+              )}
           </div>
+          )}
 
           {/* Submit Buttons */}
           <div className="flex gap-4 pt-4">
             <button
               type="submit"
-              disabled={saving}
-              className="px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              disabled={uploading || saving}
+              className="px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
             >
+              {saving && (
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
               {saving ? "Saving..." : "Save Changes"}
             </button>
             <button
               type="button"
               onClick={() => router.push("/admin")}
-              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 cursor-pointer"
+              disabled={uploading || saving}
+              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>

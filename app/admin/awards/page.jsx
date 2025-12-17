@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import { getAwards, createAward, updateAward, deleteAward } from "@/lib/awards"
@@ -11,6 +11,9 @@ function AdminAwards() {
   const [editingId, setEditingId] = useState(null)
   const [message, setMessage] = useState({ type: "", text: "" })
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+  const formRef = useRef(null)
 
   const [formData, setFormData] = useState({
     year: "",
@@ -19,10 +22,9 @@ function AdminAwards() {
     outlet: "",
     description: "",
     status: "",
-    links: [], // Array of URLs
+    link: "", // Single URL
     order: 0
   })
-  const [linkInput, setLinkInput] = useState("")
 
   useEffect(() => {
     loadAwards()
@@ -42,6 +44,8 @@ function AdminAwards() {
   }
 
   function handleEdit(award) {
+    // Get first link if links array exists, otherwise empty string
+    const firstLink = award.links && award.links.length > 0 ? award.links[0] : ""
     setFormData({
       year: award.year || "",
       award: award.award || "",
@@ -49,22 +53,25 @@ function AdminAwards() {
       outlet: award.outlet || "",
       description: award.description || "",
       status: award.status || "",
-      links: award.links || [],
-      order: award.order || 0
+      link: firstLink,
+      order: award.order !== undefined ? award.order : 0
     })
     setEditingId(award.id)
     setShowForm(true)
-    setLinkInput("")
+    // Scroll to form after state update
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   function handleNew() {
-    // Auto-suggest next order number (max order + 1, or 1 if empty)
+    // Auto-suggest next order number (max order + 1, or 0 if empty)
     const validOrders = allAwards
-      .map(a => a.order || 0)
-      .filter(order => order >= 1) // Only consider orders >= 1
+      .map(a => a.order !== undefined ? a.order : 999)
+      .filter(order => order >= 0) // Consider orders >= 0
     const maxOrder = validOrders.length > 0 
       ? Math.max(...validOrders)
-      : 0
+      : -1
     const nextOrder = maxOrder + 1
     
     setFormData({
@@ -74,36 +81,28 @@ function AdminAwards() {
       outlet: "",
       description: "",
       status: "",
-      links: [],
+      link: "",
       order: nextOrder
     })
     setEditingId(null)
     setShowForm(true)
-    setLinkInput("")
-  }
-
-  function handleAddLink() {
-    if (linkInput.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        links: [...(prev.links || []), linkInput.trim()]
-      }))
-      setLinkInput("")
-    }
-  }
-
-  function handleRemoveLink(index) {
-    setFormData(prev => ({
-      ...prev,
-      links: prev.links.filter((_, i) => i !== index)
-    }))
+    // Scroll to form after state update
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
+    setSaving(true)
     setMessage({ type: "", text: "" })
 
-    const dataToSave = { ...formData }
+    // Convert single link to array format for database (for backward compatibility)
+    const dataToSave = {
+      ...formData,
+      links: formData.link.trim() ? [formData.link.trim()] : []
+    }
+    delete dataToSave.link // Remove the single link field, keep only links array
 
     const result = editingId
       ? await updateAward(editingId, dataToSave)
@@ -117,17 +116,25 @@ function AdminAwards() {
     } else {
       setMessage({ type: "error", text: result.error || "Failed to save award" })
     }
+    setSaving(false)
   }
 
   async function handleDelete(id) {
     if (!confirm("Are you sure you want to delete this award?")) return
 
+    setDeletingId(id)
+    try {
     const result = await deleteAward(id)
     if (result.success) {
       setMessage({ type: "success", text: "Updated" })
       loadAwards()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to delete award" })
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: error.message || "Failed to delete award" })
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -168,7 +175,7 @@ function AdminAwards() {
           </div>
 
           {showForm && (
-            <form onSubmit={handleSubmit} className="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
+            <form ref={formRef} onSubmit={handleSubmit} className="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
               <h2 className="text-xl font-semibold mb-4">{editingId ? "Edit Award" : "New Award"}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -230,7 +237,7 @@ function AdminAwards() {
                     min="0"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Lower numbers appear first. Awards are displayed in order (0 = first).
+                    Lower numbers appear first. Awards are displayed in order (0 = first). Orders are automatically adjusted when inserting between items.
                   </p>
                 </div>
               </div>
@@ -245,65 +252,39 @@ function AdminAwards() {
                 />
               </div>
 
-              {/* Links Section */}
+              {/* Link Section */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Links</label>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Link</label>
                     <input
                       type="url"
-                      value={linkInput}
-                      onChange={(e) => setLinkInput(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          handleAddLink()
-                        }
-                      }}
+                  value={formData.link}
+                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
                       placeholder="https://example.com"
-                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <button
-                      type="button"
-                      onClick={handleAddLink}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-                    >
-                      Add Link
-                    </button>
-                  </div>
-                  {formData.links && formData.links.length > 0 && (
-                    <div className="space-y-1">
-                      {formData.links.map((link, index) => (
-                        <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
-                          <a
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 text-sm text-blue-600 hover:text-blue-800 truncate"
-                          >
-                            {link}
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveLink(index)}
-                            className="text-red-600 hover:text-red-800 text-sm cursor-pointer"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Optional. Enter a single link URL for this award.
+                </p>
               </div>
 
 
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                  disabled={saving}
+                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
                 >
-                  {editingId ? "Update Award" : "Create Award"}
+                  {saving ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {editingId ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    editingId ? "Update Award" : "Create Award"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -311,7 +292,8 @@ function AdminAwards() {
                     setShowForm(false)
                     setEditingId(null)
                   }}
-                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
+                  disabled={saving}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -347,22 +329,34 @@ function AdminAwards() {
                       {award.description && <p className="text-xs text-gray-500 mt-1">{award.description}</p>}
                       {award.links && award.links.length > 0 && (
                         <p className="text-xs text-blue-600 mt-1">
-                          {award.links.length} link(s): {award.links[0]}
+                          Link: <a href={award.links[0]} target="_blank" rel="noopener noreferrer" className="hover:underline">{award.links[0]}</a>
                         </p>
                       )}
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(award)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm cursor-pointer"
+                        disabled={deletingId === award.id}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(award.id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm cursor-pointer"
+                        disabled={deletingId === award.id}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
-                        Delete
+                        {deletingId === award.id ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Deleting...
+                          </>
+                        ) : (
+                          "Delete"
+                        )}
                       </button>
                     </div>
                   </div>

@@ -9,9 +9,9 @@ export default function sitemap() {
       priority: 1,
     },
     {
-      url: `${SITE_URL}/projects`,
+      url: `${SITE_URL}/about`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
@@ -21,7 +21,31 @@ export default function sitemap() {
       priority: 0.8,
     },
     {
-      url: `${SITE_URL}/portraits`,
+      url: `${SITE_URL}/documentaries`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/video-reports`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/photos/portraits`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/photos/singles`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/photos/stories`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
@@ -37,30 +61,6 @@ export default function sitemap() {
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.6,
-    },
-    {
-      url: `${SITE_URL}/projects/photo-stories`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/projects/films-documentaries`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/projects/print-digital-features`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/projects/global-assignments`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
     },
   ]
 }

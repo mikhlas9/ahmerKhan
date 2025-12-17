@@ -1,9 +1,10 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import ImageUpload from "@/components/ImageUpload"
 import { getTearsheets, createTearsheet, updateTearsheet, deleteTearsheet } from "@/lib/tearsheets"
+import { deleteImage, isFirebaseStorageUrl } from "@/lib/storage"
 import Toast from "@/components/Toast"
 
 function AdminTearsheets() {
@@ -12,6 +13,10 @@ function AdminTearsheets() {
   const [editingId, setEditingId] = useState(null)
   const [message, setMessage] = useState({ type: "", text: "" })
   const [showForm, setShowForm] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+  const formRef = useRef(null)
 
   const [formData, setFormData] = useState({
     src: "",
@@ -49,23 +54,43 @@ function AdminTearsheets() {
     })
     setEditingId(tearsheet.id)
     setShowForm(true)
+    // Scroll to form after state update
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   function handleNew() {
+    // Auto-suggest next order number (max order + 1, or 1 if empty)
+    const validOrders = tearsheets
+      .map(t => t.order || 0)
+      .filter(order => order >= 1) // Only consider orders >= 1
+    const maxOrder = validOrders.length > 0 
+      ? Math.max(...validOrders)
+      : 0
+    const nextOrder = maxOrder + 1
+    
     setFormData({
       src: "",
       alt: "",
       width: 600,
       height: 800,
       publication: "",
-      order: 0
+      order: nextOrder
     })
     setEditingId(null)
     setShowForm(true)
+    // Scroll to form after state update
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (uploading) return // Prevent submit while uploading
+    
+    setSaving(true)
     setMessage({ type: "", text: "" })
 
     const dataToSave = {
@@ -89,17 +114,33 @@ function AdminTearsheets() {
     } else {
       setMessage({ type: "error", text: result.error || "Failed to save tearsheet" })
     }
+    setSaving(false)
   }
 
   async function handleDelete(id) {
     if (!confirm("Are you sure you want to delete this tearsheet?")) return
 
+    setDeletingId(id)
+    try {
     const result = await deleteTearsheet(id)
     if (result.success) {
+        // Delete image from storage if it's a Firebase Storage URL
+        if (result.imageUrl && isFirebaseStorageUrl(result.imageUrl)) {
+          const deleteResult = await deleteImage(result.imageUrl)
+          if (!deleteResult.success) {
+            console.warn('Failed to delete image from storage:', deleteResult.error)
+            // Continue anyway - the tearsheet is already deleted
+          }
+        }
       setMessage({ type: "success", text: "Updated" })
       loadTearsheets()
     } else {
       setMessage({ type: "error", text: result.error || "Failed to delete tearsheet" })
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: error.message || "Failed to delete tearsheet" })
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -143,7 +184,7 @@ function AdminTearsheets() {
           </div>
 
           {showForm && (
-            <form onSubmit={handleSubmit} className="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
+            <form ref={formRef} onSubmit={handleSubmit} className="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
               <h2 className="text-xl font-semibold mb-4">{editingId ? "Edit" : "New"} Tearsheet</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -151,6 +192,7 @@ function AdminTearsheets() {
                   <ImageUpload
                     value={formData.src}
                     onChange={(url) => setFormData({ ...formData, src: url })}
+                    onUploadingChange={setUploading}
                     folder="tearsheets"
                     label="Image *"
                     placeholder="/images/t1.jpg"
@@ -182,8 +224,12 @@ function AdminTearsheets() {
                     type="number"
                     value={formData.order}
                     onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                    min="1"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Lower numbers appear first. Orders are automatically adjusted when inserting between items.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
@@ -210,9 +256,20 @@ function AdminTearsheets() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                  disabled={uploading || saving}
+                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
                 >
-                  {editingId ? "Update" : "Create"}
+                  {saving ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {editingId ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    editingId ? "Update" : "Create"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -220,7 +277,8 @@ function AdminTearsheets() {
                     setShowForm(false)
                     setEditingId(null)
                   }}
-                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
+                  disabled={uploading || saving}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -256,20 +314,33 @@ function AdminTearsheets() {
                           <p className="text-sm text-gray-600 mt-1">Publication: {tearsheet.publication}</p>
                         )}
                         <p className="text-xs text-gray-500 mt-1">Size: {tearsheet.width} × {tearsheet.height}px</p>
+                        <p className="text-xs text-blue-600 mt-1">Order: {tearsheet.order || 0}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(tearsheet)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm cursor-pointer"
+                        disabled={deletingId === tearsheet.id}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(tearsheet.id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm cursor-pointer"
+                        disabled={deletingId === tearsheet.id}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
-                        Delete
+                        {deletingId === tearsheet.id ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Deleting...
+                          </>
+                        ) : (
+                          "Delete"
+                        )}
                       </button>
                     </div>
                   </div>

@@ -1,25 +1,39 @@
 "use client"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getPhotos, PHOTO_TYPES } from "@/lib/photos"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function PhotosPortraits() {
   const [fullscreenImage, setFullscreenImage] = useState(null)
+  const [portraits, setPortraits] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  // Static portrait images for now
-  const images = [
-    { src: "/images/po1.png", alt: "Portrait 1" },
-    { src: "/images/po2.png", alt: "Portrait 2" },
-    { src: "/images/po3.png", alt: "Portrait 3" },
-    { src: "/images/po4.png", alt: "Portrait 4" },
-    { src: "/images/po5.png", alt: "Portrait 5" },
-    { src: "/images/po6.png", alt: "Portrait 6" },
-    { src: "/images/po7.png", alt: "Portrait 7" },
-    { src: "/images/po8.png", alt: "Portrait 8" },
-    { src: "/images/poc1.png", alt: "Portrait 9" },
-    { src: "/images/poc2.png", alt: "Portrait 10" },
-    { src: "/images/poc3.png", alt: "Portrait 11" },
-    { src: "/images/poc4.png", alt: "Portrait 12" },
-  ]
+  useEffect(() => {
+    async function fetchPortraits() {
+      try {
+        const data = await getPhotos(PHOTO_TYPES.PORTRAIT)
+        setPortraits(data)
+      } catch (error) {
+        console.error('Error loading portraits:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPortraits()
+  }, [])
+
+  if (loading) {
+    return <LoadingSpinner text="Loading" />
+  }
+
+  // Convert portraits data to images format
+  const images = portraits.map(item => ({
+    src: item.src || "",
+    alt: item.alt || "Portrait",
+    width: item.width || 500,
+    height: item.height || 600
+  })).filter(img => img.src) // Filter out items without src
 
   const openFullscreen = (imageSrc) => {
     setFullscreenImage(imageSrc)
@@ -43,8 +57,13 @@ export default function PhotosPortraits() {
       {/* Gallery - CSS Columns Masonry */}
       <section className="pb-24 px-6 md:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-6">
-            {images.map((image, index) => (
+          {images.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              No portraits found.
+            </div>
+          ) : (
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-6">
+              {images.map((image, index) => (
               <div
                 key={index}
                 className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
@@ -54,8 +73,8 @@ export default function PhotosPortraits() {
                   <Image
                     src={image.src}
                     alt={image.alt}
-                    width={500}
-                    height={600}
+                    width={image.width || 500}
+                    height={image.height || 600}
                     className="w-full h-auto transition-transform duration-500 ease-out group-hover:scale-105"
                   />
                   {/* Fullscreen Icon on Hover */}
@@ -78,8 +97,9 @@ export default function PhotosPortraits() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

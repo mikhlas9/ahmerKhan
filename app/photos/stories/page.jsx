@@ -1,34 +1,47 @@
 "use client"
 import Image from "next/image"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
+import { getPhotos, PHOTO_TYPES } from "@/lib/photos"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function Stories() {
-  const stories = [
-    {
-      heading: "Story Title One",
-      images: ["/images/po1.png", "/images/po2.png", "/images/po3.png"],
-      paragraph: "This is a short paragraph describing the story. It captures the essence of the narrative and provides context for the images displayed above."
-    },
-    {
-      heading: "Story Title Two",
-      images: ["/images/po4.png", "/images/po5.png", "/images/po6.png"],
-      paragraph: "Another compelling story with its own narrative. The images tell a visual story that complements the written description."
-    },
-    {
-      heading: "Story Title Three",
-      images: ["/images/po7.png", "/images/po8.png", "/images/poc1.png"],
-      paragraph: "A third story showcasing different perspectives and moments captured through photography."
+  const [stories, setStories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [fullscreenImage, setFullscreenImage] = useState(null)
+
+  useEffect(() => {
+    async function fetchStories() {
+      try {
+        const data = await getPhotos(PHOTO_TYPES.STORY)
+        setStories(data)
+      } catch (error) {
+        console.error('Error loading stories:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+    fetchStories()
+  }, [])
 
   // State to track current image index for each story
-  const [currentIndices, setCurrentIndices] = useState(
-    stories.reduce((acc, _, index) => {
-      acc[index] = 0
-      return acc
-    }, {})
+  const [currentIndices, setCurrentIndices] = useState({})
+
+  // Filter out stories without images
+  const validStories = stories.filter(story => 
+    story.images && Array.isArray(story.images) && story.images.length > 0
   )
-  const [fullscreenImage, setFullscreenImage] = useState(null)
+
+  // Initialize currentIndices when stories are loaded
+  useEffect(() => {
+    if (validStories.length > 0) {
+      setCurrentIndices(
+        validStories.reduce((acc, _, index) => {
+          acc[index] = 0
+          return acc
+        }, {})
+      )
+    }
+  }, [stories])
   
   // Touch handling for swipe
   const touchStartX = useRef({})
@@ -39,7 +52,8 @@ export default function Stories() {
   const minSwipeDistance = 50
 
   const goToPrevious = (storyIndex) => {
-    const story = stories[storyIndex]
+    const story = validStories[storyIndex]
+    if (!story) return
     setCurrentIndices((prev) => ({
       ...prev,
       [storyIndex]: prev[storyIndex] === 0 ? story.images.length - 1 : prev[storyIndex] - 1
@@ -47,7 +61,8 @@ export default function Stories() {
   }
 
   const goToNext = (storyIndex) => {
-    const story = stories[storyIndex]
+    const story = validStories[storyIndex]
+    if (!story) return
     setCurrentIndices((prev) => ({
       ...prev,
       [storyIndex]: prev[storyIndex] === story.images.length - 1 ? 0 : prev[storyIndex] + 1
@@ -95,6 +110,10 @@ export default function Stories() {
     setFullscreenImage(null)
   }
 
+  if (loading) {
+    return <LoadingSpinner text="Loading" />
+  }
+
   return (
     <main className="min-h-screen bg-white text-black">
       {/* Header Section */}
@@ -109,14 +128,19 @@ export default function Stories() {
       {/* Stories List */}
       <section className="pb-24 px-6 md:px-8">
         <div className="max-w-7xl mx-auto space-y-16">
-          {stories.map((story, storyIndex) => {
+          {validStories.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              No stories found.
+            </div>
+          ) : (
+            validStories.map((story, storyIndex) => {
             const currentImageIndex = currentIndices[storyIndex] || 0
             
             return (
               <article key={storyIndex} className="space-y-8">
                 {/* Image Slider */}
                 <div 
-                  className="relative w-full h-[500px] md:h-[600px] overflow-hidden cursor-pointer group" 
+                  className="relative w-full h-[350px] md:h-[450px] overflow-hidden cursor-pointer group" 
                   onClick={() => openFullscreen(story.images[currentImageIndex])}
                   onTouchStart={(e) => onTouchStart(e, storyIndex)}
                   onTouchMove={(e) => onTouchMove(e, storyIndex)}
@@ -195,18 +219,18 @@ export default function Stories() {
                 {/* Heading and Paragraph - Centered */}
                 <div className="text-center space-y-4">
                   {/* Heading */}
-                  <h2 className="text-lg md:text-xl font-normal tracking-wide uppercase text-gray-800">
+                  <h2 className="text-lg md:text-xl font-medium tracking-wide uppercase text-gray-800">
                     {story.heading}
                   </h2>
 
                   {/* Paragraph */}
-                  <p className="text-sm md:text-base text-gray-600 leading-relaxed max-w-2xl mx-auto text-left">
+                  <p className="text-sm md:text-base text-gray-600 leading-relaxed max-w-2xl mx-auto text-center">
                     {story.paragraph}
                   </p>
                 </div>
               </article>
             )
-          })}
+          }))}
         </div>
       </section>
 

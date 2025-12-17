@@ -146,15 +146,12 @@ export default function Contact() {
   return (
     <main className="min-h-screen bg-white text-black ">
             {/* Header Section */}
-            <section className="py-10 md:py-10 px-6 md:px-8 ">
+            <section className="py-10 md:py-10 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl tracking-tight mb-2 md:mb-5 uppercase">
-                        {contactInfo.title || "Get In Touch"}
+                    <h1 className="text-4xl md:text-5xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
+                        Get In Touch
                     </h1>
-                    {/* <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
-                        {contactInfo.description || "Available for editorial assignments, documentary projects, and speaking engagements. Let's collaborate on telling important stories."}
-                    </p> */}
-          </div>
+                </div>
             </section>
 
             {/* Contact Content */}

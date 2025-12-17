@@ -12,8 +12,6 @@ function AdminContact() {
   const [message, setMessage] = useState({ type: "", text: "" })
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
     email: "",
     phone: "",
     location: "",
@@ -34,8 +32,6 @@ function AdminContact() {
       const data = await getContactData()
       setContactInfo(data)
       setFormData({
-        title: data.title || "",
-        description: data.description || "",
         email: data.email || "",
         phone: data.phone || "",
         location: data.location || "",
@@ -116,33 +112,6 @@ function AdminContact() {
             <div className="text-center py-12 text-gray-500">Loading contact information...</div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Header Section */}
-              <div className="border-b border-gray-200 pb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Page Header</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      rows={3}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
               {/* Contact Information Section */}
               <div className="border-b border-gray-200 pb-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>

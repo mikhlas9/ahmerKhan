@@ -2,53 +2,57 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
-import { getDocumentaries, createDocumentary, updateDocumentary, deleteDocumentary } from "@/lib/documentaries"
-import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/storage"
+import ImageUpload from "@/components/ImageUpload"
+import { getPhotos, createPhoto, updatePhoto, deletePhoto, PHOTO_TYPES } from "@/lib/photos"
+import { deleteImage, isFirebaseStorageUrl } from "@/lib/storage"
 import Toast from "@/components/Toast"
 
-function AdminDocumentaries() {
-  const [documentaries, setDocumentaries] = useState([])
+function AdminSingles() {
+  const [singles, setSingles] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState(null)
   const [message, setMessage] = useState({ type: "", text: "" })
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
+  const [uploading, setUploading] = useState(false)
   const formRef = useRef(null)
 
   const [formData, setFormData] = useState({
-    outlet: "",
-    title: "",
-    videoUrl: "",
-    videoThumbnail: "",
+    src: "",
+    alt: "",
+    width: 500,
+    height: 600,
+    type: PHOTO_TYPES.SINGLE,
     order: 0
   })
 
   useEffect(() => {
-    loadDocumentaries()
+    loadSingles()
   }, [])
 
-  async function loadDocumentaries() {
+  async function loadSingles() {
     setLoading(true)
     try {
-      const data = await getDocumentaries()
-      setDocumentaries(data)
+      const data = await getPhotos(PHOTO_TYPES.SINGLE)
+      setSingles(data)
     } catch (error) {
-      setMessage({ type: "error", text: "Failed to load documentaries" })
+      setMessage({ type: "error", text: "Failed to load singles" })
     } finally {
       setLoading(false)
     }
   }
 
-  function handleEdit(doc) {
+  function handleEdit(item) {
     setFormData({
-      outlet: doc.outlet || "",
-      title: doc.title || "",
-      videoUrl: doc.videoUrl || "",
-      videoThumbnail: doc.videoThumbnail || "",
-      order: doc.order || 0
+      src: item.src || "",
+      alt: item.alt || "",
+      width: item.width || 500,
+      height: item.height || 600,
+      type: PHOTO_TYPES.SINGLE,
+      order: item.order !== undefined ? item.order : 0
     })
-    setEditingId(doc.id)
+    setEditingId(item.id)
     setShowForm(true)
     // Scroll to form after state update
     setTimeout(() => {
@@ -57,20 +61,21 @@ function AdminDocumentaries() {
   }
 
   function handleNew() {
-    // Auto-suggest next order number (max order + 1, or 1 if empty)
-    const validOrders = documentaries
-      .map(d => d.order || 0)
-      .filter(order => order >= 1) // Only consider orders >= 1
+    // Auto-suggest next order number
+    const validOrders = singles
+      .map(s => s.order !== undefined ? s.order : 999)
+      .filter(order => order >= 0)
     const maxOrder = validOrders.length > 0 
       ? Math.max(...validOrders)
-      : 0
+      : -1
     const nextOrder = maxOrder + 1
     
     setFormData({
-      outlet: "",
-      title: "",
-      videoUrl: "",
-      videoThumbnail: "",
+      src: "",
+      alt: "",
+      width: 500,
+      height: 600,
+      type: PHOTO_TYPES.SINGLE,
       order: nextOrder
     })
     setEditingId(null)
@@ -81,45 +86,34 @@ function AdminDocumentaries() {
     }, 100)
   }
 
-  // Handle video URL change and auto-fill thumbnail
-  const handleVideoUrlChange = (url) => {
-    const videoId = extractYouTubeVideoId(url)
-    let thumbnailUrl = ""
-    
-    if (videoId) {
-      thumbnailUrl = getYouTubeThumbnailUrl(videoId)
-    }
-    
-    setFormData(prev => ({
-      ...prev,
-      videoUrl: url,
-      videoThumbnail: thumbnailUrl
-    }))
-  }
-
   async function handleSubmit(e) {
     e.preventDefault()
+    if (uploading) return
+    
     setSaving(true)
     setMessage({ type: "", text: "" })
 
-    if (!formData.outlet || !formData.title || !formData.videoUrl) {
-      setMessage({ type: "error", text: "Please fill in all required fields" })
-      setSaving(false)
-      return
+    const dataToSave = {
+      src: formData.src,
+      alt: formData.alt,
+      width: parseInt(formData.width) || 500,
+      height: parseInt(formData.height) || 600,
+      type: PHOTO_TYPES.SINGLE,
+      order: parseInt(formData.order) || 0
     }
 
     try {
-    const result = editingId
-      ? await updateDocumentary(editingId, formData)
-      : await createDocumentary(formData)
+      const result = editingId
+        ? await updatePhoto(editingId, dataToSave)
+        : await createPhoto(dataToSave)
 
-    if (result.success) {
-      setMessage({ type: "success", text: "Updated" })
-      setShowForm(false)
-      setEditingId(null)
-      loadDocumentaries()
-    } else {
-      setMessage({ type: "error", text: result.error || "Failed to save documentary" })
+      if (result.success) {
+        setMessage({ type: "success", text: "Updated" })
+        setShowForm(false)
+        setEditingId(null)
+        loadSingles()
+      } else {
+        setMessage({ type: "error", text: result.error || "Failed to save single" })
       }
     } finally {
       setSaving(false)
@@ -127,16 +121,24 @@ function AdminDocumentaries() {
   }
 
   async function handleDelete(id) {
-    if (!confirm("Are you sure you want to delete this documentary?")) return
+    if (!confirm("Are you sure you want to delete this single?")) return
 
     setDeletingId(id)
     try {
-    const result = await deleteDocumentary(id)
-    if (result.success) {
-      setMessage({ type: "success", text: "Updated" })
-      loadDocumentaries()
-    } else {
-      setMessage({ type: "error", text: result.error || "Failed to delete documentary" })
+      const result = await deletePhoto(id)
+      if (result.success) {
+        // Delete images from storage
+        if (result.imageUrls && result.imageUrls.length > 0) {
+          for (const imageUrl of result.imageUrls) {
+            if (isFirebaseStorageUrl(imageUrl)) {
+              await deleteImage(imageUrl)
+            }
+          }
+        }
+        setMessage({ type: "success", text: "Updated" })
+        loadSingles()
+      } else {
+        setMessage({ type: "error", text: result.error || "Failed to delete single" })
       }
     } finally {
       setDeletingId(null)
@@ -151,8 +153,8 @@ function AdminDocumentaries() {
         </Link>
 
         <div className="bg-white rounded-lg shadow p-6 md:p-8 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Documentaries</h1>
-          <p className="text-gray-600">Add, edit, and delete your documentaries</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Singles</h1>
+          <p className="text-gray-600">Add, edit, and delete your single photos</p>
         </div>
 
         {/* Toast Notification */}
@@ -172,32 +174,41 @@ function AdminDocumentaries() {
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Documentaries</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Singles</h2>
             </div>
             <button
               onClick={handleNew}
               className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
             >
-              + New Documentary
+              + New Single
             </button>
           </div>
 
           {showForm && (
             <form ref={formRef} onSubmit={handleSubmit} className="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
-              <h2 className="text-xl font-semibold mb-4">{editingId ? "Edit Documentary" : "New Documentary"}</h2>
+              <h2 className="text-xl font-semibold mb-4">{editingId ? "Edit Single" : "New Single"}</h2>
+              
+              <div className="mb-4">
+                <ImageUpload
+                  value={formData.src}
+                  onChange={(url) => setFormData({ ...formData, src: url })}
+                  folder="photos/singles"
+                  label="Image *"
+                  placeholder="/images/po1.png"
+                  onUploadingChange={setUploading}
+                />
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Outlet *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
                   <input
                     type="text"
-                    value={formData.outlet}
-                    onChange={(e) => setFormData({ ...formData, outlet: e.target.value })}
-                    placeholder="e.g., The New York Times"
+                    value={formData.alt}
+                    onChange={(e) => setFormData({ ...formData, alt: e.target.value })}
+                    placeholder="Photo description"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
                   />
-                  <p className="text-xs text-gray-500 mt-1">The publication or network name (shown at top)</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
@@ -206,64 +217,38 @@ function AdminDocumentaries() {
                     value={formData.order}
                     onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    min="1"
+                    min="0"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Lower numbers appear first. Orders are independent for Documentaries only.
+                    Lower numbers appear first. Orders are automatically adjusted when inserting between items.
                   </p>
                 </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g., Inside the Kashmir That India Doesn't Want the World to See"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">The documentary title (shown below outlet)</p>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Video URL *</label>
-                <input
-                  type="text"
-                  value={formData.videoUrl}
-                  onChange={(e) => handleVideoUrlChange(e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Enter a YouTube URL. The thumbnail will be automatically generated.
-                </p>
-              </div>
-
-              {formData.videoThumbnail && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Video Thumbnail (Auto-generated)</label>
-                  <div className="relative w-full max-w-md border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                    <div className="relative aspect-video w-full">
-                      <img
-                        src={formData.videoThumbnail}
-                        alt="Video thumbnail"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    This thumbnail is automatically generated from the YouTube video URL.
-                  </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
+                  <input
+                    type="number"
+                    value={formData.width}
+                    onChange={(e) => setFormData({ ...formData, width: parseInt(e.target.value) || 500 })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
                 </div>
-              )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+                  <input
+                    type="number"
+                    value={formData.height}
+                    onChange={(e) => setFormData({ ...formData, height: parseInt(e.target.value) || 600 })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
 
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={uploading || saving}
                   className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {saving && (
@@ -272,7 +257,7 @@ function AdminDocumentaries() {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   )}
-                  {editingId ? "Update Documentary" : "Create Documentary"}
+                  {editingId ? "Update" : "Create"}
                 </button>
                 <button
                   type="button"
@@ -280,7 +265,7 @@ function AdminDocumentaries() {
                     setShowForm(false)
                     setEditingId(null)
                   }}
-                  disabled={saving}
+                  disabled={uploading || saving}
                   className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
@@ -290,37 +275,45 @@ function AdminDocumentaries() {
           )}
 
           {loading ? (
-            <div className="text-center py-12 text-gray-500">Loading documentaries...</div>
-          ) : documentaries.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">Loading singles...</div>
+          ) : singles.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              No documentaries found. Use the migration script to initialize with default data.
+              No singles found. Click "+ New Single" to add one.
             </div>
           ) : (
             <div className="space-y-4">
-              {documentaries.map((doc) => (
-                <div key={doc.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+              {singles.map((item) => (
+                <div key={item.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 uppercase text-sm">{doc.outlet}</p>
-                      <p className="text-base text-gray-700 mt-1">{doc.title}</p>
-                      <div className="mt-2 flex gap-2">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Order: {doc.order}</span>
-                        {doc.videoUrl && <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Video</span>}
+                    <div className="flex-1 flex items-center gap-4">
+                      {item.src && (
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                          <img
+                            src={item.src}
+                            alt={item.alt || "Single"}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{item.alt || "Single"}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{item.src}</p>
+                        <p className="text-xs text-gray-500 mt-1">Size: {item.width} × {item.height}px | Order: {item.order !== undefined ? item.order : 0}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleEdit(doc)}
+                        onClick={() => handleEdit(item)}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm cursor-pointer"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(doc.id)}
-                        disabled={deletingId === doc.id}
+                        onClick={() => handleDelete(item.id)}
+                        disabled={deletingId === item.id}
                         className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
-                        {deletingId === doc.id && (
+                        {deletingId === item.id && (
                           <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -340,11 +333,10 @@ function AdminDocumentaries() {
   )
 }
 
-export default function AdminDocumentariesPage() {
+export default function AdminSinglesPage() {
   return (
     <AdminAuthWrapper>
-      <AdminDocumentaries />
+      <AdminSingles />
     </AdminAuthWrapper>
   )
 }
-

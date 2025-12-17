@@ -1,20 +1,20 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { getHomepageData } from '@/lib/homepage';
+import { getAbout } from '@/lib/about';
 import Link from 'next/link';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [homepageData, setHomepageData] = useState(null);
+  const [aboutData, setAboutData] = useState(null);
   const [photosDropdownOpen, setPhotosDropdownOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const data = await getHomepageData();
-        setHomepageData(data);
+        const data = await getAbout();
+        setAboutData(data);
       } catch (error) {
-        console.error('Error loading homepage data:', error);
+        console.error('Error loading about data:', error);
       }
     }
     fetchData();
@@ -37,8 +37,8 @@ export default function Navbar() {
     { name: 'PORTRAITS', href: '/photos/portraits' },
   ];
 
-  const name = homepageData?.name || 'AHMER KHAN';
-  const title = homepageData?.title || 'Filmmaker & Investigative Journalist';
+  const name = aboutData?.name || 'AHMER KHAN';
+  const title = aboutData?.title || 'Filmmaker & Investigative Journalist';
 
  return (
     <>
@@ -63,11 +63,11 @@ export default function Navbar() {
                 const isVideoReports = item.name === 'VIDEO REPORTS'
                 return (
                   <div key={item.name} className="flex items-center">
-                    <Link
-                      href={item.href}
-                      className="text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200"
-                    >
-                      {item.name}
+                <Link
+                  href={item.href}
+                  className="text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                >
+                  {item.name}
                     </Link>
                     {/* Photos Dropdown - Insert after VIDEO REPORTS */}
                     {isVideoReports && (
@@ -95,8 +95,8 @@ export default function Navbar() {
                                 className="block px-4 py-2 text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
                               >
                                 {subItem.name}
-                              </Link>
-                            ))}
+                </Link>
+              ))}
                           </div>
                         </div>
                       </div>
@@ -169,15 +169,15 @@ export default function Navbar() {
             const isVideoReports = item.name === 'VIDEO REPORTS'
             return (
               <div key={item.name} className="flex flex-col items-center">
-                <Link
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
+            <Link
+              href={item.href}
+              onClick={() => setIsOpen(false)}
                   className="text-[20px] font-weight-400 text-gray-800 hover:text-gray-600 transition-colors duration-200"
-                  style={{
-                    fontFamily: 'Cabin, sans-serif'
-                  }}
-                >
-                  {item.name}
+              style={{
+                fontFamily: 'Cabin, sans-serif'
+              }}
+            >
+              {item.name}
                 </Link>
                 {/* Photos Dropdown - Insert after VIDEO REPORTS */}
                 {isVideoReports && (
@@ -225,8 +225,8 @@ export default function Navbar() {
                           }}
                         >
                           {subItem.name}
-                        </Link>
-                      ))}
+            </Link>
+          ))}
                     </div>
                   </div>
                 )}
