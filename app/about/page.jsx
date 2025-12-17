@@ -78,7 +78,7 @@ export default function About() {
                         <div className="w-full md:w-2/3 lg:w-3/5 flex-1">
                             <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
                                 {aboutData.bio ? (
-                                    <div className="space-y-4 text-base md:text-lg">
+                                    <div className="space-y-4 text-base md:text-[17px]">
                                         {Array.isArray(aboutData.bio) ? (
                                             aboutData.bio.map((paragraph, index) => (
                                                 <p key={index} className="mb-4">
@@ -106,7 +106,7 @@ export default function About() {
             </section>
 
             {/* Media Coverage Section */}
-            <section className="py-8 md:py-12 px-6 md:px-8">
+            {/* <section className="py-8 md:py-12 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-2xl md:text-3xl font-medium mb-6 text-black uppercase tracking-wide">
                         MEDIA COVERAGE
@@ -147,7 +147,7 @@ export default function About() {
                         </a>
                     </div>
                 </div>
-            </section>
+            </section> */}
         </main>
     )
 }

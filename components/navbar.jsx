@@ -42,7 +42,7 @@ export default function Navbar() {
 
  return (
     <>
-      <nav className="bg-white z-50 border-b border-gray-200">
+      <nav className="bg-white z-50 border-b border-gray-200 relative">
         <div className="w-full py-5 px-5 md:px-30">
           <div className="flex items-center justify-between w-full">
             {/* Left Side - Name and Subtitle */}
@@ -72,7 +72,7 @@ export default function Navbar() {
                     {/* Photos Dropdown - Insert after VIDEO REPORTS */}
                     {isVideoReports && (
                       <div 
-                        className="relative ml-4 lg:ml-5"
+                        className="relative ml-4 lg:ml-5 z-50"
                         onMouseEnter={() => setPhotosDropdownOpen(true)}
                         onMouseLeave={() => setPhotosDropdownOpen(false)}
                       >
@@ -80,14 +80,14 @@ export default function Navbar() {
                           PHOTOS
                         </button>
                         <div 
-                          className={`absolute top-full left-0 transition-all duration-200 ease-in-out ${
+                          className={`absolute top-full left-0 transition-all duration-200 ease-in-out z-[9999] ${
                             photosDropdownOpen 
                               ? 'opacity-100 visible translate-y-0' 
                               : 'opacity-0 invisible -translate-y-1 pointer-events-none'
                           }`}
                           style={{ paddingTop: '4px' }}
                         >
-                          <div className="bg-white border border-gray-200 shadow-lg py-2 min-w-[150px] z-50">
+                          <div className="bg-white border border-gray-200 shadow-lg py-2 min-w-[150px]">
                             {photosSubmenu.map((subItem) => (
                               <Link
                                 key={subItem.name}
