@@ -30,8 +30,8 @@ export default function Home() {
   const mediaUrl = homepageData?.mediaUrl || '/images/home.jpeg'
 
   return (
-    <main className="w-full bg-white">
-      <div className="relative w-full" style={{ height: 'calc(100vh - 100px)' }}>
+    <main className="w-full bg-black">
+      <div className="relative w-full h-[calc(100vh-100px)] min-h-[calc(100vh-100px)]">
         {mediaType === 'video' ? (
           <video
             src={mediaUrl}
@@ -39,15 +39,14 @@ export default function Home() {
             loop
             muted
             playsInline
-            className="w-full h-full object-contain"
-            style={{ objectFit: 'contain' }}
+            className="w-full h-full object-cover"
           />
         ) : (
             <Image 
             src={mediaUrl} 
             alt="Home" 
               fill 
-            className="object-contain" 
+            className="object-cover" 
               priority 
             />
               )}

@@ -5,7 +5,7 @@ import { getPhotos, PHOTO_TYPES } from "@/lib/photos"
 import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function PhotosPortraits() {
-  const [fullscreenImage, setFullscreenImage] = useState(null)
+  const [fullscreenIndex, setFullscreenIndex] = useState(null)
   const [portraits, setPortraits] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -31,16 +31,30 @@ export default function PhotosPortraits() {
   const images = portraits.map(item => ({
     src: item.src || "",
     alt: item.alt || "Portrait",
+    caption: item.caption || "",
     width: item.width || 500,
     height: item.height || 600
   })).filter(img => img.src) // Filter out items without src
 
-  const openFullscreen = (imageSrc) => {
-    setFullscreenImage(imageSrc)
+  const openFullscreen = (image) => {
+    const index = images.findIndex(img => img.src === image.src)
+    setFullscreenIndex(index >= 0 ? index : 0)
   }
 
   const closeFullscreen = () => {
-    setFullscreenImage(null)
+    setFullscreenIndex(null)
+  }
+
+  const goToPreviousImage = () => {
+    if (fullscreenIndex === null) return
+    const newIndex = fullscreenIndex === 0 ? images.length - 1 : fullscreenIndex - 1
+    setFullscreenIndex(newIndex)
+  }
+
+  const goToNextImage = () => {
+    if (fullscreenIndex === null) return
+    const newIndex = fullscreenIndex === images.length - 1 ? 0 : fullscreenIndex + 1
+    setFullscreenIndex(newIndex)
   }
 
   return (
@@ -48,7 +62,7 @@ export default function PhotosPortraits() {
       {/* Header Section */}
       <section className="py-10 md:py-10 px-6 md:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
+          <h1 className="text-4xl text-gray-500 md:text-5xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
             Portraits
           </h1>
         </div>
@@ -66,33 +80,34 @@ export default function PhotosPortraits() {
               {images.map((image, index) => (
               <div
                 key={index}
-                className="break-inside-avoid mb-4 md:mb-6 cursor-pointer group relative"
-                onClick={() => openFullscreen(image.src)}
+                className="break-inside-avoid mb-4 md:mb-6 group"
               >
-                <div className="relative overflow-hidden rounded-xl">
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    width={image.width || 500}
-                    height={image.height || 600}
-                    className="w-full h-auto transition-transform duration-500 ease-out group-hover:scale-105"
-                  />
-                  {/* Fullscreen Icon on Hover */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out shadow-lg">
-                      <svg
-                        className="w-6 h-6 text-gray-900"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
+                <div className="cursor-pointer relative" onClick={() => openFullscreen(image)}>
+                  <div className="relative overflow-hidden rounded-xl">
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      width={image.width || 500}
+                      height={image.height || 600}
+                      className="w-full h-auto transition-transform duration-500 ease-out group-hover:scale-105"
+                    />
+                    {/* Fullscreen Icon on Hover */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out shadow-lg">
+                        <svg
+                          className="w-6 h-6 text-gray-900"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -104,14 +119,14 @@ export default function PhotosPortraits() {
       </section>
 
       {/* Fullscreen Image Modal */}
-      {fullscreenImage && (
+      {fullscreenIndex !== null && images[fullscreenIndex] && (
         <div
-          className="fixed inset-0 z-50 bg-white flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-4"
           onClick={closeFullscreen}
         >
           <button
             onClick={closeFullscreen}
-            className="absolute top-4 right-4 text-gray-900 hover:text-gray-600 transition-colors z-10 cursor-pointer"
+            className="absolute top-4 right-4 text-gray-900 hover:text-gray-600 transition-colors z-20 cursor-pointer"
             aria-label="Close fullscreen"
           >
             <svg
@@ -128,15 +143,59 @@ export default function PhotosPortraits() {
               />
             </svg>
           </button>
-          <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
-            <Image
-              src={fullscreenImage}
-              alt="Fullscreen view"
-              width={1920}
-              height={1080}
-              className="object-contain max-w-full max-h-full"
-              onClick={(e) => e.stopPropagation()}
-            />
+
+          {/* Main Image Container with Navigation */}
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Left Navigation */}
+            {images.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  goToPreviousImage()
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
+                aria-label="Previous image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Main Image */}
+            <div className="relative max-w-7xl w-full h-full flex flex-col items-center justify-center">
+              <div className="relative max-w-full max-h-[calc(100vh-120px)] flex items-center justify-center mb-4">
+                <Image
+                  src={images[fullscreenIndex].src}
+                  alt="Fullscreen view"
+                  width={1920}
+                  height={1080}
+                  className="object-contain max-w-full max-h-full"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              {images[fullscreenIndex].caption && (
+                <p className="text-sm text-gray-600 text-center leading-relaxed max-w-3xl px-4">
+                  {images[fullscreenIndex].caption}
+                </p>
+              )}
+            </div>
+
+            {/* Right Navigation */}
+            {images.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  goToNextImage()
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
+                aria-label="Next image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       )}

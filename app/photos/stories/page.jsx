@@ -1,13 +1,15 @@
 "use client"
 import Image from "next/image"
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { getPhotos, PHOTO_TYPES } from "@/lib/photos"
 import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function Stories() {
+  const router = useRouter()
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
-  const [fullscreenImage, setFullscreenImage] = useState(null)
+  const [fullscreenData, setFullscreenData] = useState(null) // { currentIndex, allImages, storyHeading }
 
   useEffect(() => {
     async function fetchStories() {
@@ -23,91 +25,105 @@ export default function Stories() {
     fetchStories()
   }, [])
 
-  // State to track current image index for each story
-  const [currentIndices, setCurrentIndices] = useState({})
-
   // Filter out stories without images
   const validStories = stories.filter(story => 
     story.images && Array.isArray(story.images) && story.images.length > 0
   )
 
-  // Initialize currentIndices when stories are loaded
-  useEffect(() => {
-    if (validStories.length > 0) {
-      setCurrentIndices(
-        validStories.reduce((acc, _, index) => {
-          acc[index] = 0
-          return acc
-        }, {})
-      )
-    }
-  }, [stories])
-  
-  // Touch handling for swipe
-  const touchStartX = useRef({})
-  const touchStartY = useRef({})
-  const touchEndX = useRef({})
-  const touchEndY = useRef({})
-  
-  const minSwipeDistance = 50
+  // Generate slug from story heading
+  const generateSlug = (heading) => {
+    return heading
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+  }
 
-  const goToPrevious = (storyIndex) => {
+  // Get images from a specific story for fullscreen gallery
+  const getStoryImages = (storyIndex) => {
     const story = validStories[storyIndex]
-    if (!story) return
-    setCurrentIndices((prev) => ({
-      ...prev,
-      [storyIndex]: prev[storyIndex] === 0 ? story.images.length - 1 : prev[storyIndex] - 1
+    if (!story) return []
+    
+    return story.images.map((img, imgIndex) => ({
+      src: img,
+      storyIndex,
+      imageIndex: imgIndex,
+      storyHeading: story.heading
     }))
   }
 
-  const goToNext = (storyIndex) => {
+  const openFullscreen = (storyIndex, imageIndex) => {
     const story = validStories[storyIndex]
     if (!story) return
-    setCurrentIndices((prev) => ({
-      ...prev,
-      [storyIndex]: prev[storyIndex] === story.images.length - 1 ? 0 : prev[storyIndex] + 1
-    }))
-  }
-
-  const onTouchStart = (e, storyIndex) => {
-    touchStartX.current[storyIndex] = e.touches[0].clientX
-    touchStartY.current[storyIndex] = e.touches[0].clientY
-  }
-
-  const onTouchMove = (e, storyIndex) => {
-    touchEndX.current[storyIndex] = e.touches[0].clientX
-    touchEndY.current[storyIndex] = e.touches[0].clientY
-  }
-
-  const onTouchEnd = (storyIndex) => {
-    if (!touchStartX.current[storyIndex] || !touchEndX.current[storyIndex]) return
     
-    const distanceX = touchStartX.current[storyIndex] - touchEndX.current[storyIndex]
-    const distanceY = touchStartY.current[storyIndex] - touchEndY.current[storyIndex]
-    const isLeftSwipe = distanceX > minSwipeDistance
-    const isRightSwipe = distanceX < -minSwipeDistance
-    const isVerticalSwipe = Math.abs(distanceY) > Math.abs(distanceX)
+    const storyImages = getStoryImages(storyIndex)
+    const slug = generateSlug(story.heading)
     
-    // Only handle horizontal swipes
-    if (isVerticalSwipe) return
+    setFullscreenData({
+      currentIndex: imageIndex >= 0 && imageIndex < storyImages.length ? imageIndex : 0,
+      allImages: storyImages,
+      storyHeading: story.heading
+    })
     
-    if (isLeftSwipe) {
-      goToNext(storyIndex)
-    } else if (isRightSwipe) {
-      goToPrevious(storyIndex)
-    }
-    
-    // Reset touch positions
-    touchStartX.current[storyIndex] = null
-    touchEndX.current[storyIndex] = null
-  }
-
-  const openFullscreen = (imageSrc) => {
-    setFullscreenImage(imageSrc)
+    // Update URL to story slug page
+    router.push(`/photos/stories/${slug}`)
   }
 
   const closeFullscreen = () => {
-    setFullscreenImage(null)
+    setFullscreenData(null)
+    // Reset URL to base stories page
+    router.push('/photos/stories')
+  }
+
+  const handleShare = async () => {
+    if (!fullscreenData) return
+    
+    const slug = generateSlug(fullscreenData.storyHeading)
+    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/photos/stories/${slug}`
+    
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: fullscreenData.storyHeading,
+          url: url
+        })
+      } catch (err) {
+        // User cancelled or error occurred
+        console.log('Share cancelled or failed')
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+          await navigator.clipboard.writeText(url)
+          alert('Link copied to clipboard!')
+        }
+      } catch (err) {
+        console.error('Failed to copy:', err)
+      }
+    }
+  }
+
+  const goToPreviousImage = () => {
+    if (!fullscreenData) return
+    const newIndex = fullscreenData.currentIndex === 0 
+      ? fullscreenData.allImages.length - 1 
+      : fullscreenData.currentIndex - 1
+    setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+  }
+
+  const goToNextImage = () => {
+    if (!fullscreenData) return
+    const newIndex = fullscreenData.currentIndex === fullscreenData.allImages.length - 1 
+      ? 0 
+      : fullscreenData.currentIndex + 1
+    setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+  }
+
+  const goToImage = (index) => {
+    if (!fullscreenData) return
+    setFullscreenData({ ...fullscreenData, currentIndex: index })
   }
 
   if (loading) {
@@ -119,7 +135,7 @@ export default function Stories() {
       {/* Header Section */}
       <section className="py-10 md:py-10 px-6 md:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
+          <h1 className="text-4xl text-gray-500 md:text-5xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
             Stories
           </h1>
         </div>
@@ -134,86 +150,42 @@ export default function Stories() {
             </div>
           ) : (
             validStories.map((story, storyIndex) => {
-            const currentImageIndex = currentIndices[storyIndex] || 0
-            
             return (
               <article key={storyIndex} className="space-y-8">
-                {/* Image Slider */}
-                <div 
-                  className="relative w-full h-[350px] md:h-[450px] overflow-hidden cursor-pointer group" 
-                  onClick={() => openFullscreen(story.images[currentImageIndex])}
-                  onTouchStart={(e) => onTouchStart(e, storyIndex)}
-                  onTouchMove={(e) => onTouchMove(e, storyIndex)}
-                  onTouchEnd={() => onTouchEnd(storyIndex)}
-                >
-                  {story.images.map((img, imgIndex) => (
+                {/* Image Grid - 2 columns (only first 2 images) */}
+                <div className="grid grid-cols-2 gap-4 md:gap-6">
+                  {story.images.slice(0, 2).map((img, imgIndex) => (
                     <div
                       key={imgIndex}
-                      className={`absolute inset-0 transition-opacity duration-500 ${
-                        imgIndex === currentImageIndex ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-                      }`}
+                      className="relative w-full aspect-[4/3] overflow-hidden rounded-xl cursor-pointer group"
+                      onClick={() => openFullscreen(storyIndex, imgIndex)}
                     >
-                      <div className="relative w-full h-full">
-                        <Image
-                          src={img}
-                          alt={`${story.heading} - Image ${imgIndex + 1}`}
-                          fill
-                          className="object-contain"
-                        />
-                        
-                        {/* Fullscreen Icon on Hover - only shows on visible image */}
-                        {imgIndex === currentImageIndex && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out pointer-events-none">
-                            <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out shadow-lg">
-                              <svg
-                                className="w-6 h-6 text-gray-900"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
+                      <Image
+                        src={img}
+                        alt={`${story.heading} - Image ${imgIndex + 1}`}
+                        fill
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+                      {/* Fullscreen Icon on Hover */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-500 ease-out shadow-lg">
+                          <svg
+                            className="w-6 h-6 text-gray-900"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                          </svg>
+                        </div>
                       </div>
                     </div>
                   ))}
-                  
-                  {/* Navigation Arrows */}
-                  {story.images.length > 1 && (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          goToPrevious(storyIndex)
-                        }}
-                        className="hidden md:block absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-1.5 rounded-full shadow-md transition-all duration-200 z-10 cursor-pointer opacity-0 group-hover:opacity-100"
-                        aria-label="Previous image"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          goToNext(storyIndex)
-                        }}
-                        className="hidden md:block absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-1.5 rounded-full shadow-md transition-all duration-200 z-10 cursor-pointer opacity-0 group-hover:opacity-100"
-                        aria-label="Next image"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </>
-                  )}
                 </div>
 
                 {/* Heading and Paragraph - Centered */}
@@ -235,40 +207,130 @@ export default function Stories() {
       </section>
 
       {/* Fullscreen Image Modal */}
-      {fullscreenImage && (
+      {fullscreenData && fullscreenData.allImages.length > 0 && (
         <div
-          className="fixed inset-0 z-50 bg-white flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-white flex flex-col p-4"
           onClick={closeFullscreen}
         >
-          <button
-            onClick={closeFullscreen}
-            className="absolute top-4 right-4 text-gray-900 hover:text-gray-600 transition-colors z-10 cursor-pointer"
-            aria-label="Close fullscreen"
-          >
-            <svg
-              className="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="absolute top-4 right-4 flex gap-3 z-20">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleShare()
+              }}
+              className="text-gray-900 hover:text-gray-600 transition-colors cursor-pointer"
+              aria-label="Share story"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-          <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
-            <Image
-              src={fullscreenImage}
-              alt="Fullscreen view"
-              width={1920}
-              height={1080}
-              className="object-contain max-w-full max-h-full"
-              onClick={(e) => e.stopPropagation()}
-            />
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={closeFullscreen}
+              className="text-gray-900 hover:text-gray-600 transition-colors cursor-pointer"
+              aria-label="Close fullscreen"
+            >
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
+
+          {/* Main Image Container with Navigation */}
+          <div className="relative flex-1 flex items-center justify-center min-h-0">
+            {/* Left Navigation */}
+            {fullscreenData.allImages.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  goToPreviousImage()
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
+                aria-label="Previous image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Main Image */}
+            <div className="relative max-w-[95%] w-full h-full flex items-center justify-center">
+              <Image
+                src={fullscreenData.allImages[fullscreenData.currentIndex].src}
+                alt="Fullscreen view"
+                width={1920}
+                height={1080}
+                className="object-contain max-w-full max-h-full"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+
+            {/* Right Navigation */}
+            {fullscreenData.allImages.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  goToNextImage()
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
+                aria-label="Next image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Thumbnail Gallery */}
+          {fullscreenData.allImages.length > 1 && (
+            <div className="flex-shrink-0 flex justify-center px-4 py-2">
+              <div className="flex gap-1.5 overflow-x-auto max-w-7xl" onClick={(e) => e.stopPropagation()}>
+                {fullscreenData.allImages.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      goToImage(index)
+                    }}
+                    className={`relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                      index === fullscreenData.currentIndex
+                        ? 'border-gray-900 ring-2 ring-gray-900'
+                        : 'border-gray-300 hover:border-gray-600'
+                    }`}
+                  >
+                    <Image
+                      src={img.src}
+                      alt={`Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </main>

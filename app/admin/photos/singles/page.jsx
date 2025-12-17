@@ -21,6 +21,7 @@ function AdminSingles() {
   const [formData, setFormData] = useState({
     src: "",
     alt: "",
+    caption: "",
     width: 500,
     height: 600,
     type: PHOTO_TYPES.SINGLE,
@@ -47,6 +48,7 @@ function AdminSingles() {
     setFormData({
       src: item.src || "",
       alt: item.alt || "",
+      caption: item.caption || "",
       width: item.width || 500,
       height: item.height || 600,
       type: PHOTO_TYPES.SINGLE,
@@ -73,6 +75,7 @@ function AdminSingles() {
     setFormData({
       src: "",
       alt: "",
+      caption: "",
       width: 500,
       height: 600,
       type: PHOTO_TYPES.SINGLE,
@@ -96,6 +99,7 @@ function AdminSingles() {
     const dataToSave = {
       src: formData.src,
       alt: formData.alt,
+      caption: formData.caption || "",
       width: parseInt(formData.width) || 500,
       height: parseInt(formData.height) || 600,
       type: PHOTO_TYPES.SINGLE,
@@ -199,6 +203,20 @@ function AdminSingles() {
                 />
               </div>
               
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Caption</label>
+                <textarea
+                  value={formData.caption}
+                  onChange={(e) => setFormData({ ...formData, caption: e.target.value })}
+                  placeholder="A Thames Water sewer inspector, or 'flusher', at work in London's sewer systems"
+                  rows={2}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Text that appears below the image
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
@@ -298,6 +316,9 @@ function AdminSingles() {
                       <div>
                         <h3 className="font-semibold text-gray-900">{item.alt || "Single"}</h3>
                         <p className="text-sm text-gray-600 mt-1">{item.src}</p>
+                        {item.caption && (
+                          <p className="text-sm text-gray-700 mt-1 italic line-clamp-2">{item.caption}</p>
+                        )}
                         <p className="text-xs text-gray-500 mt-1">Size: {item.width} × {item.height}px | Order: {item.order !== undefined ? item.order : 0}</p>
                       </div>
                     </div>
