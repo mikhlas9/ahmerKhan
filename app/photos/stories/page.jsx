@@ -1,6 +1,6 @@
 "use client"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useRef } from "react"
 
 export default function Stories() {
   const stories = [
@@ -29,6 +29,14 @@ export default function Stories() {
     }, {})
   )
   const [fullscreenImage, setFullscreenImage] = useState(null)
+  
+  // Touch handling for swipe
+  const touchStartX = useRef({})
+  const touchStartY = useRef({})
+  const touchEndX = useRef({})
+  const touchEndY = useRef({})
+  
+  const minSwipeDistance = 50
 
   const goToPrevious = (storyIndex) => {
     const story = stories[storyIndex]
@@ -46,11 +54,37 @@ export default function Stories() {
     }))
   }
 
-  const goToImage = (storyIndex, imageIndex) => {
-    setCurrentIndices((prev) => ({
-      ...prev,
-      [storyIndex]: imageIndex
-    }))
+  const onTouchStart = (e, storyIndex) => {
+    touchStartX.current[storyIndex] = e.touches[0].clientX
+    touchStartY.current[storyIndex] = e.touches[0].clientY
+  }
+
+  const onTouchMove = (e, storyIndex) => {
+    touchEndX.current[storyIndex] = e.touches[0].clientX
+    touchEndY.current[storyIndex] = e.touches[0].clientY
+  }
+
+  const onTouchEnd = (storyIndex) => {
+    if (!touchStartX.current[storyIndex] || !touchEndX.current[storyIndex]) return
+    
+    const distanceX = touchStartX.current[storyIndex] - touchEndX.current[storyIndex]
+    const distanceY = touchStartY.current[storyIndex] - touchEndY.current[storyIndex]
+    const isLeftSwipe = distanceX > minSwipeDistance
+    const isRightSwipe = distanceX < -minSwipeDistance
+    const isVerticalSwipe = Math.abs(distanceY) > Math.abs(distanceX)
+    
+    // Only handle horizontal swipes
+    if (isVerticalSwipe) return
+    
+    if (isLeftSwipe) {
+      goToNext(storyIndex)
+    } else if (isRightSwipe) {
+      goToPrevious(storyIndex)
+    }
+    
+    // Reset touch positions
+    touchStartX.current[storyIndex] = null
+    touchEndX.current[storyIndex] = null
   }
 
   const openFullscreen = (imageSrc) => {
@@ -81,7 +115,13 @@ export default function Stories() {
             return (
               <article key={storyIndex} className="space-y-8">
                 {/* Image Slider */}
-                <div className="relative w-full h-[500px] md:h-[600px] overflow-hidden cursor-pointer group" onClick={() => openFullscreen(story.images[currentImageIndex])}>
+                <div 
+                  className="relative w-full h-[500px] md:h-[600px] overflow-hidden cursor-pointer group" 
+                  onClick={() => openFullscreen(story.images[currentImageIndex])}
+                  onTouchStart={(e) => onTouchStart(e, storyIndex)}
+                  onTouchMove={(e) => onTouchMove(e, storyIndex)}
+                  onTouchEnd={() => onTouchEnd(storyIndex)}
+                >
                   {story.images.map((img, imgIndex) => (
                     <div
                       key={imgIndex}
@@ -149,27 +189,6 @@ export default function Stories() {
                         </svg>
                       </button>
                     </>
-                  )}
-
-                  {/* Dots Indicator */}
-                  {story.images.length > 1 && (
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                      {story.images.map((_, dotIndex) => (
-                        <button
-                          key={dotIndex}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            goToImage(storyIndex, dotIndex)
-                          }}
-                          className={`w-2 h-2 rounded-full transition-all duration-200 cursor-pointer ${
-                            dotIndex === currentImageIndex 
-                              ? 'bg-gray-900 w-8' 
-                              : 'bg-gray-900/50 hover:bg-gray-900/75'
-                          }`}
-                          aria-label={`Go to image ${dotIndex + 1}`}
-                        />
-                      ))}
-                    </div>
                   )}
                 </div>
 
