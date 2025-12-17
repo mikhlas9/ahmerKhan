@@ -43,40 +43,40 @@ export default function Navbar() {
  return (
     <>
       <nav className="bg-white z-50 border-b border-gray-200 relative">
-        <div className="w-full py-5 px-5 md:px-30">
-          <div className="flex items-center justify-between w-full">
+        <div className="w-full py-5 px-4 md:px-8 lg:px-16 xl:px-24 2xl:px-30">
+          <div className="flex items-center justify-between w-full gap-4">
             {/* Left Side - Name and Subtitle */}
-            <div className="flex flex-col">
+            <div className="flex flex-col items-center flex-shrink-0">
               <Link href="/" className="group">
-                <h1 className="text-2xl md:text-4xl  text-black tracking-wider  leading-tight">
+                <h1 className="text-xl md:text-2xl lg:text-4xl text-black tracking-wider leading-tight text-center">
                   {name}
                 </h1>
-                <p className="text-[10px] md:text-sm text-gray-500 mt-1 font-normal leading-tight">
+                <p className="text-[9px] md:text-[10px] lg:text-sm text-gray-500 mt-1 font-normal leading-tight text-center">
                   {title}
                 </p>
               </Link>
             </div>
 
             {/* Desktop Menu - Right Side */}
-            <div className="hidden md:flex items-center space-x-4 lg:space-x-5">
+            <div className="hidden md:flex items-center space-x-2 md:space-x-3 lg:space-x-4 flex-nowrap flex-shrink">
               {menuItems.map((item) => {
                 const isVideoReports = item.name === 'VIDEO REPORTS'
                 return (
                   <div key={item.name} className="flex items-center">
                 <Link
                   href={item.href}
-                  className="text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                  className="text-[12px] md:text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200 leading-tight whitespace-nowrap"
                 >
                   {item.name}
                     </Link>
                     {/* Photos Dropdown - Insert after VIDEO REPORTS */}
                     {isVideoReports && (
                       <div 
-                        className="relative ml-4 lg:ml-5 z-50"
+                        className="relative ml-2 md:ml-3 lg:ml-4 z-50 flex items-center"
                         onMouseEnter={() => setPhotosDropdownOpen(true)}
                         onMouseLeave={() => setPhotosDropdownOpen(false)}
                       >
-                        <button className="text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
+                        <button className="text-[12px] md:text-[13px] font-weight-400 text-gray-700 hover:text-gray-900 transition-colors duration-200 cursor-pointer leading-tight whitespace-nowrap">
                           PHOTOS
                         </button>
                         <div 
