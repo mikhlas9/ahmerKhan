@@ -47,7 +47,7 @@ export default function Home() {
   return (
     <main className="w-full bg-black">
       {/* Desktop: Show Video */}
-      <div className="hidden md:block relative w-full h-[calc(100vh-100px)] min-h-[calc(100vh-100px)]">
+      <div className="hidden md:block relative w-full h-screen min-h-screen">
         {desktopVideoUrl ? (
           <>
             {/* Show loading spinner with white background while video loads */}
