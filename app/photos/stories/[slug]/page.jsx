@@ -13,6 +13,11 @@ export default function StorySlugPage() {
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
   const [fullscreenData, setFullscreenData] = useState(null)
+  const [isClosing, setIsClosing] = useState(false)
+  const [imageChanging, setImageChanging] = useState(false)
+  const [isOpening, setIsOpening] = useState(false)
+  const [touchStart, setTouchStart] = useState(null)
+  const [touchEnd, setTouchEnd] = useState(null)
 
   useEffect(() => {
     async function fetchStories() {
@@ -64,19 +69,26 @@ export default function StorySlugPage() {
       )
       if (storyIndex >= 0) {
         const storyImages = getStoryImages(storyIndex)
+        setIsOpening(true)
         setFullscreenData({
           currentIndex: 0,
           allImages: storyImages,
           storyHeading: validStories[storyIndex].heading
         })
+        // Reset opening state after animation
+        setTimeout(() => setIsOpening(false), 300)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, slug, validStories.length])
 
   const closeFullscreen = () => {
-    setFullscreenData(null)
-    router.push('/photos/stories')
+    setIsClosing(true)
+    setTimeout(() => {
+      setFullscreenData(null)
+      setIsClosing(false)
+      router.push('/photos/stories')
+    }, 300) // Match transition duration
   }
 
   const handleShare = async () => {
@@ -107,23 +119,69 @@ export default function StorySlugPage() {
 
   const goToPreviousImage = () => {
     if (!fullscreenData) return
-    const newIndex = fullscreenData.currentIndex === 0 
-      ? fullscreenData.allImages.length - 1 
-      : fullscreenData.currentIndex - 1
-    setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+    setImageChanging(true)
+    setTimeout(() => {
+      const newIndex = fullscreenData.currentIndex === 0 
+        ? fullscreenData.allImages.length - 1 
+        : fullscreenData.currentIndex - 1
+      setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+      setTimeout(() => setImageChanging(false), 50)
+    }, 150)
   }
 
   const goToNextImage = () => {
     if (!fullscreenData) return
-    const newIndex = fullscreenData.currentIndex === fullscreenData.allImages.length - 1 
-      ? 0 
-      : fullscreenData.currentIndex + 1
-    setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+    setImageChanging(true)
+    setTimeout(() => {
+      const newIndex = fullscreenData.currentIndex === fullscreenData.allImages.length - 1 
+        ? 0 
+        : fullscreenData.currentIndex + 1
+      setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+      setTimeout(() => setImageChanging(false), 50)
+    }, 150)
   }
 
   const goToImage = (index) => {
     if (!fullscreenData) return
-    setFullscreenData({ ...fullscreenData, currentIndex: index })
+    if (index === fullscreenData.currentIndex) return
+    setImageChanging(true)
+    setTimeout(() => {
+      setFullscreenData({ ...fullscreenData, currentIndex: index })
+      setTimeout(() => setImageChanging(false), 50)
+    }, 150)
+  }
+
+  // Swipe gesture handlers for mobile
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e) => {
+    e.stopPropagation()
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e) => {
+    e.stopPropagation()
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = (e) => {
+    e.stopPropagation()
+    if (!touchStart || !touchEnd || !fullscreenData) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe) {
+      goToNextImage()
+    }
+    if (isRightSwipe) {
+      goToPreviousImage()
+    }
+    
+    // Reset touch values
+    setTouchStart(null)
+    setTouchEnd(null)
   }
 
   if (loading) {
@@ -149,7 +207,9 @@ export default function StorySlugPage() {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-white flex flex-col p-4"
+      className={`fixed inset-0 z-50 bg-white flex flex-col p-4 transition-all duration-300 ${
+        isClosing ? 'opacity-0 scale-95' : isOpening ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+      }`}
       onClick={closeFullscreen}
     >
       <div className="absolute top-4 right-4 flex gap-3 z-20">
@@ -197,15 +257,20 @@ export default function StorySlugPage() {
       </div>
 
       {/* Main Image Container with Navigation */}
-      <div className="relative flex-1 flex items-center justify-center min-h-0">
-        {/* Left Navigation */}
+      <div 
+        className="relative flex-1 flex items-center justify-center min-h-0"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Left Navigation - Hidden on mobile */}
         {fullscreenData.allImages.length > 1 && (
           <button
             onClick={(e) => {
               e.stopPropagation()
               goToPreviousImage()
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
             aria-label="Previous image"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,23 +282,26 @@ export default function StorySlugPage() {
         {/* Main Image */}
         <div className="relative max-w-[95%] w-full h-full flex items-center justify-center">
           <Image
+            key={fullscreenData.currentIndex}
             src={fullscreenData.allImages[fullscreenData.currentIndex].src}
             alt="Fullscreen view"
             width={1920}
             height={1080}
-            className="object-contain max-w-full max-h-full"
+            className={`object-contain max-w-full max-h-full transition-opacity duration-300 ${
+              isClosing || imageChanging ? 'opacity-0' : 'opacity-100'
+            }`}
             onClick={(e) => e.stopPropagation()}
           />
         </div>
 
-        {/* Right Navigation */}
+        {/* Right Navigation - Hidden on mobile */}
         {fullscreenData.allImages.length > 1 && (
           <button
             onClick={(e) => {
               e.stopPropagation()
               goToNextImage()
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
             aria-label="Next image"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
