@@ -1,6 +1,6 @@
 "use client"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { getTearsheets } from "@/lib/tearsheets"
 import LoadingSpinner from "@/components/LoadingSpinner"
 
@@ -8,6 +8,8 @@ export default function Tearsheets() {
     const [fullscreenImage, setFullscreenImage] = useState(null)
     const [tearsheets, setTearsheets] = useState([])
     const [loading, setLoading] = useState(true)
+    const [imagesLoaded, setImagesLoaded] = useState(false)
+    const imagesLoadedCount = useRef(0)
 
     useEffect(() => {
         async function fetchTearsheets() {
@@ -23,6 +25,43 @@ export default function Tearsheets() {
         fetchTearsheets()
     }, [])
 
+    // Preload images to prevent layout shift in CSS columns
+    useEffect(() => {
+        if (tearsheets.length === 0 || loading) return
+
+        imagesLoadedCount.current = 0
+        setImagesLoaded(false)
+
+        // Preload all images to get their actual dimensions before rendering
+        const imagePromises = tearsheets.map((tearsheet) => {
+            return new Promise((resolve) => {
+                const img = new window.Image()
+                img.onload = () => {
+                    imagesLoadedCount.current++
+                    // Update tearsheet with actual dimensions if not set
+                    if (!tearsheet.width || !tearsheet.height) {
+                        tearsheet.width = img.naturalWidth
+                        tearsheet.height = img.naturalHeight
+                    }
+                    if (imagesLoadedCount.current === tearsheets.length) {
+                        setImagesLoaded(true)
+                    }
+                    resolve()
+                }
+                img.onerror = () => {
+                    imagesLoadedCount.current++
+                    if (imagesLoadedCount.current === tearsheets.length) {
+                        setImagesLoaded(true)
+                    }
+                    resolve() // Resolve even on error to not block rendering
+                }
+                img.src = tearsheet.src
+            })
+        })
+
+        Promise.all(imagePromises)
+    }, [tearsheets, loading])
+
     const openFullscreen = (imageSrc) => {
         setFullscreenImage(imageSrc)
     }
@@ -35,12 +74,17 @@ export default function Tearsheets() {
         return <LoadingSpinner />
     }
 
+    // Show loading spinner while preloading images to prevent layout shift
+    if (!imagesLoaded && tearsheets.length > 0) {
+        return <LoadingSpinner />
+    }
+
   return (
     <main className="min-h-screen bg-white text-black">
             {/* Header Section */}
             <section className="py-10 md:py-10 px-4 md:px-6 ">
                 <div className="max-w-[1600px] mx-auto text-center">
-                    <h1 className="text-4xl text-gray-500 md:text-5xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
+                    <h1 className="text-3xl text-gray-500 md:text-4xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
                         Tearsheets
                     </h1>
                     {/* <p className="text-sm md:text-base font-normal text-gray-700 leading-relaxed max-w-3xl mx-auto">
@@ -73,6 +117,8 @@ export default function Tearsheets() {
                                                 alt={tearsheet.alt || "Tearsheet"}
                                                 width={tearsheet.width || 600}
                                                 height={tearsheet.height || 800}
+                                                loading="eager"
+                                                priority={tearsheets.indexOf(tearsheet) < 6}
                                                 className="w-full h-auto transition-all duration-700 ease-out group-hover:scale-105"
                                             />
                                             {/* Subtle overlay on hover */}

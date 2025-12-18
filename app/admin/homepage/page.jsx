@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { getHomepageData, saveHomepageData } from "@/lib/homepage"
 import { useRouter } from "next/navigation"
 import ImageUpload from "@/components/ImageUpload"
+import VideoUpload from "@/components/VideoUpload"
 import Toast from "@/components/Toast"
 
 function HomepageAdmin() {
@@ -14,8 +15,8 @@ function HomepageAdmin() {
   const [message, setMessage] = useState({ type: "", text: "" })
   const formRef = useRef(null)
   const [formData, setFormData] = useState({
-    mediaType: "image", // "image" or "video"
-    mediaUrl: ""
+    desktopVideoUrl: "",
+    mobileImages: ["/images/home.jpeg"]
   })
 
   useEffect(() => {
@@ -23,15 +24,30 @@ function HomepageAdmin() {
       try {
         const data = await getHomepageData()
         if (data) {
-          setFormData({
-            mediaType: data.mediaType || "image",
-            mediaUrl: data.mediaUrl || "/images/home.jpeg"
-          })
+          // Support both old and new data structure for backward compatibility
+          if (data.desktopVideoUrl !== undefined || data.mobileImages !== undefined) {
+            setFormData({
+              desktopVideoUrl: data.desktopVideoUrl || "",
+              mobileImages: data.mobileImages && data.mobileImages.length > 0 
+                ? data.mobileImages 
+                : ["/images/home.jpeg"]
+            })
+          } else {
+            // Migrate old structure to new structure
+            const desktopVideoUrl = data.mediaType === 'video' ? (data.mediaUrl || "") : ""
+            const mobileImages = data.mediaType === 'image' 
+              ? [data.mediaUrl || "/images/home.jpeg"] 
+              : ["/images/home.jpeg"]
+            setFormData({
+              desktopVideoUrl,
+              mobileImages
+            })
+          }
         } else {
           // Initialize with default
           setFormData({
-            mediaType: "image",
-            mediaUrl: "/images/home.jpeg"
+            desktopVideoUrl: "",
+            mobileImages: ["/images/home.jpeg"]
           })
         }
       } catch (error) {
@@ -51,6 +67,35 @@ function HomepageAdmin() {
     }))
   }
 
+  const handleMobileImageChange = (index, url) => {
+    setFormData(prev => {
+      const newImages = [...prev.mobileImages]
+      newImages[index] = url
+      return {
+        ...prev,
+        mobileImages: newImages
+      }
+    })
+  }
+
+  const addMobileImage = () => {
+    if (formData.mobileImages.length < 4) {
+      setFormData(prev => ({
+        ...prev,
+        mobileImages: [...prev.mobileImages, ""]
+      }))
+    }
+  }
+
+  const removeMobileImage = (index) => {
+    if (formData.mobileImages.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        mobileImages: prev.mobileImages.filter((_, i) => i !== index)
+      }))
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (uploading) return
@@ -60,8 +105,8 @@ function HomepageAdmin() {
 
     try {
       const result = await saveHomepageData({
-        mediaType: formData.mediaType,
-        mediaUrl: formData.mediaUrl
+        desktopVideoUrl: formData.desktopVideoUrl,
+        mobileImages: formData.mobileImages.filter(img => img && img.trim() !== "")
       })
 
       if (result.success) {
@@ -96,7 +141,7 @@ function HomepageAdmin() {
             ← Back to Dashboard
           </button>
           <h1 className="text-3xl font-bold text-gray-900">Edit Homepage</h1>
-          <p className="text-gray-600 mt-2">Upload an image or video to display on the homepage</p>
+          <p className="text-gray-600 mt-2">Upload a video for desktop and 3-4 images for mobile</p>
         </div>
 
         {/* Toast Notification */}
@@ -115,82 +160,69 @@ function HomepageAdmin() {
 
         {/* Form */}
         <form ref={formRef} onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
-          {/* Media Type Selection */}
+          {/* Desktop Video Upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Media Type *
-            </label>
-            <div className="flex gap-4">
-              <label className="flex items-center">
-            <input
-                  type="radio"
-                  value="image"
-                  checked={formData.mediaType === "image"}
-                  onChange={(e) => handleInputChange("mediaType", e.target.value)}
-                  className="mr-2"
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Desktop Video (Laptop/Desktop)</h2>
+            <VideoUpload
+              value={formData.desktopVideoUrl}
+              onChange={(url) => handleInputChange("desktopVideoUrl", url)}
+              folder="homepage"
+              label="Desktop Video"
+              placeholder="/videos/homepage-video.mp4"
+              onUploadingChange={setUploading}
             />
-                <span>Image</span>
-            </label>
-              <label className="flex items-center">
-            <input
-                  type="radio"
-                  value="video"
-                  checked={formData.mediaType === "video"}
-                  onChange={(e) => handleInputChange("mediaType", e.target.value)}
-                  className="mr-2"
-            />
-                <span>Video</span>
-            </label>
-                </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Select whether to display an image or video on the homepage. Videos will autoplay when the page loads.
+            <p className="text-xs text-gray-500 mt-2">
+              This video will be displayed on laptop and desktop screens. The video will autoplay, loop, and be muted.
             </p>
           </div>
 
-          {/* Media Upload */}
-          {formData.mediaType === "image" ? (
-            <div>
-              <ImageUpload
-                value={formData.mediaUrl}
-                onChange={(url) => handleInputChange("mediaUrl", url)}
-                folder="homepage"
-                label="Homepage Image"
-                placeholder="/images/home.jpeg"
-                onUploadingChange={setUploading}
-              />
-            </div>
-          ) : (
+          {/* Mobile Images Upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-                Video URL *
-            </label>
-            <input
-              type="text"
-                value={formData.mediaUrl}
-                onChange={(e) => handleInputChange("mediaUrl", e.target.value)}
-                placeholder="https://example.com/video.mp4 or /videos/video.mp4"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Enter the URL or path to the video file. The video will autoplay, loop, and be muted when the page loads.
-              </p>
-              {formData.mediaUrl && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-600 mb-2">Video Preview:</p>
-                  <div className="relative w-full max-w-2xl aspect-video border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                    <video
-                      src={formData.mediaUrl}
-                      controls
-                      className="w-full h-full object-contain"
-                    >
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-          </div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Mobile Images (3-4 images)</h2>
+              {formData.mobileImages.length < 4 && (
+                <button
+                  type="button"
+                  onClick={addMobileImage}
+                  className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer"
+                >
+                  + Add Image
+                </button>
               )}
+            </div>
+            <div className="space-y-4">
+              {formData.mobileImages.map((imageUrl, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Mobile Image {index + 1}
+                    </label>
+                    {formData.mobileImages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeMobileImage(index)}
+                        className="text-sm text-red-600 hover:text-red-700 cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <ImageUpload
+                    value={imageUrl}
+                    onChange={(url) => handleMobileImageChange(index, url)}
+                    folder="homepage"
+                    label=""
+                    placeholder="/images/home-mobile.jpg"
+                    id={`mobile-image-${index}`}
+                    onUploadingChange={setUploading}
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Upload 3-4 images that will be displayed in a grid on mobile devices. These images will be shown in a 2x2 grid layout.
+            </p>
           </div>
-          )}
 
           {/* Submit Buttons */}
           <div className="flex gap-4 pt-4">

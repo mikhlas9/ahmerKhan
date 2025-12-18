@@ -194,7 +194,7 @@ export default function Stories() {
       {/* Header Section */}
       <section className="py-10 md:py-10 px-6 md:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl text-gray-500 md:text-5xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
+          <h1 className="text-3xl text-gray-500 md:text-4xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
             Stories
           </h1>
         </div>
@@ -248,7 +248,7 @@ export default function Stories() {
 
                     {/* Text Content Box */}
                     <div className="p-4 md:p-5 space-y-2.5">
-                      <h3 className="text-sm md:text-base font-normal text-gray-800 leading-[1.5]">
+                      <h3 className="text-sm md:text-base font-medium text-gray-800 leading-[1.5]">
                         {story.heading}
                       </h3>
                       {story.paragraph && (
