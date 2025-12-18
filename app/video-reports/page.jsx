@@ -77,9 +77,9 @@ export default function VideoReports() {
                                                     onClick={() => setPlayingVideo(report.id)}
                                                     className="absolute inset-0 cursor-pointer group"
                                                 >
-                                                    {report.videoThumbnail ? (
+                                                    {report.customThumbnail || report.videoThumbnail ? (
                                                         <Image
-                                                            src={report.videoThumbnail}
+                                                            src={report.customThumbnail || report.videoThumbnail}
                                                             alt={report.title}
                                                             fill
                                                             className="object-cover"

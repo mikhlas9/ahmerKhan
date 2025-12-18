@@ -77,9 +77,9 @@ export default function Documentaries() {
                                                     onClick={() => setPlayingVideo(doc.id)}
                                                     className="absolute inset-0 cursor-pointer group"
                                                 >
-                                                    {doc.videoThumbnail ? (
+                                                    {doc.customThumbnail || doc.videoThumbnail ? (
                                                         <Image
-                                                            src={doc.videoThumbnail}
+                                                            src={doc.customThumbnail || doc.videoThumbnail}
                                                             alt={doc.title}
                                                             fill
                                                             className="object-cover"

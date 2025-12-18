@@ -4,6 +4,7 @@ import Link from "next/link"
 import AdminAuthWrapper from "@/components/AdminAuthWrapper"
 import { getVideoReports, createVideoReport, updateVideoReport, deleteVideoReport } from "@/lib/video-reports"
 import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/storage"
+import ImageUpload from "@/components/ImageUpload"
 import Toast from "@/components/Toast"
 
 function AdminVideoReports() {
@@ -21,8 +22,10 @@ function AdminVideoReports() {
     title: "",
     videoUrl: "",
     videoThumbnail: "",
+    customThumbnail: "",
     order: 0
   })
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     loadVideoReports()
@@ -46,6 +49,7 @@ function AdminVideoReports() {
       title: report.title || "",
       videoUrl: report.videoUrl || "",
       videoThumbnail: report.videoThumbnail || "",
+      customThumbnail: report.customThumbnail || "",
       order: report.order || 0
     })
     setEditingId(report.id)
@@ -71,6 +75,7 @@ function AdminVideoReports() {
       title: "",
       videoUrl: "",
       videoThumbnail: "",
+      customThumbnail: "",
       order: nextOrder
     })
     setEditingId(null)
@@ -81,7 +86,7 @@ function AdminVideoReports() {
     }, 100)
   }
 
-  // Handle video URL change and auto-fill thumbnail
+  // Handle video URL change and auto-fill thumbnail (only if no custom thumbnail)
   const handleVideoUrlChange = (url) => {
     const videoId = extractYouTubeVideoId(url)
     let thumbnailUrl = ""
@@ -93,7 +98,8 @@ function AdminVideoReports() {
     setFormData(prev => ({
       ...prev,
       videoUrl: url,
-      videoThumbnail: thumbnailUrl
+      // Only update YouTube thumbnail if custom thumbnail is not set
+      videoThumbnail: prev.customThumbnail ? prev.videoThumbnail : thumbnailUrl
     }))
   }
 
@@ -242,9 +248,26 @@ function AdminVideoReports() {
                 </p>
               </div>
 
-              {formData.videoThumbnail && (
+              {/* Custom Thumbnail Upload */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Custom Thumbnail (Optional)</label>
+                <ImageUpload
+                  value={formData.customThumbnail}
+                  onChange={(url) => setFormData({ ...formData, customThumbnail: url })}
+                  folder="video-reports"
+                  label=""
+                  placeholder="Upload custom thumbnail or leave empty to use YouTube thumbnail"
+                  onUploadingChange={setUploading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload a custom thumbnail image. If not provided, the YouTube auto-generated thumbnail will be used.
+                </p>
+              </div>
+
+              {/* YouTube Thumbnail Preview */}
+              {formData.videoThumbnail && !formData.customThumbnail && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Video Thumbnail (Auto-generated)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">YouTube Thumbnail (Auto-generated)</label>
                   <div className="relative w-full max-w-md border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
                     <div className="relative aspect-video w-full">
                       <img
@@ -260,10 +283,29 @@ function AdminVideoReports() {
                 </div>
               )}
 
+              {/* Custom Thumbnail Preview */}
+              {formData.customThumbnail && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Custom Thumbnail Preview</label>
+                  <div className="relative w-full max-w-md border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                    <div className="relative aspect-video w-full">
+                      <img
+                        src={formData.customThumbnail}
+                        alt="Custom thumbnail"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Custom thumbnail will be used instead of YouTube thumbnail.
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || uploading}
                   className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {saving && (
@@ -280,7 +322,7 @@ function AdminVideoReports() {
                     setShowForm(false)
                     setEditingId(null)
                   }}
-                  disabled={saving}
+                  disabled={saving || uploading}
                   className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
