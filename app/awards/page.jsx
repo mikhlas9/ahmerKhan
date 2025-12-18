@@ -60,7 +60,7 @@ export default function Awards() {
             <section className="py-10 md:py-10 px-6 md:px-8">
                 <div className="max-w-7xl mx-auto text-center">
                     <h1 className="text-3xl text-gray-500 md:text-4xl mb-2 md:mb-5 tracking-wide uppercase leading-tight">
-                        Awards, Nominations & Honours
+                        Awards
                     </h1>
                 </div>
             </section>

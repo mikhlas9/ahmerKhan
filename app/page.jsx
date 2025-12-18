@@ -45,9 +45,9 @@ export default function Home() {
   const mobileImages = homepageData?.mobileImages || (homepageData?.mediaType === 'image' ? [homepageData?.mediaUrl || '/images/home.jpeg'] : ['/images/home.jpeg'])
 
   return (
-    <main className="w-full bg-black">
+    <main className="w-full bg-white">
       {/* Desktop: Show Video */}
-      <div className="hidden md:block relative w-full h-screen min-h-screen">
+      <div className="hidden md:block relative w-full h-screen min-h-screen bg-white">
         {desktopVideoUrl ? (
           <>
             {/* Show loading spinner with white background while video loads */}
