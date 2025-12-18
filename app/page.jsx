@@ -66,7 +66,7 @@ export default function Home() {
               preload="auto"
               onCanPlay={handleVideoLoaded}
               onLoadedData={handleVideoLoaded}
-              className={`w-full h-full object-cover transition-opacity duration-300 ${videoLoaded ? 'relative z-0 opacity-100' : 'opacity-0 absolute'}`}
+              className={`w-full h-full object-contain transition-opacity duration-300 ${videoLoaded ? 'relative z-0 opacity-100' : 'opacity-0 absolute'}`}
             />
             {/* Audio Toggle Button */}
             {videoLoaded && (
