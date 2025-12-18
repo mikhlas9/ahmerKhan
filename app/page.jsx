@@ -100,8 +100,8 @@ export default function Home() {
       </div>
 
       {/* Mobile: Show Images (vertically stacked) */}
-      <div className="md:hidden relative w-full">
-        <div className="flex flex-col">
+      <div className="md:hidden relative w-full bg-white">
+        <div className="flex flex-col gap-1">
           {mobileImages.slice(0, 4).map((imageUrl, index) => (
             <div key={index} className="relative w-full aspect-[4/3]">
               <Image 

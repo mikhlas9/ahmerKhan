@@ -5,7 +5,7 @@ import { generateMetadata as generateSEOMetadata } from "@/lib/seo"
 
 export const metadata = generateSEOMetadata({
   title: "Ahmer Khan",
-  description: "Award-winning filmmaker, investigative journalist and multimedia storyteller covering conflict, humanitarian crisis and human rights in South Asia.",
+  description: "Award-winning Multimedia Journalist & Filmmaker.",
   url: "/",
 })
 
