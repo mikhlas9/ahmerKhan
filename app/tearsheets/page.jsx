@@ -8,14 +8,21 @@ export default function Tearsheets() {
     const [fullscreenImage, setFullscreenImage] = useState(null)
     const [tearsheets, setTearsheets] = useState([])
     const [loading, setLoading] = useState(true)
-    const [imagesLoaded, setImagesLoaded] = useState(false)
-    const imagesLoadedCount = useRef(0)
+    const [displayCount, setDisplayCount] = useState(10)
+    const initialImagesLoaded = useRef(0)
+    const loadMoreRef = useRef(null)
 
     useEffect(() => {
         async function fetchTearsheets() {
             try {
                 const data = await getTearsheets()
-                setTearsheets(data)
+                // Sort by order field
+                const sorted = [...data].sort((a, b) => {
+                    const orderA = a.order !== undefined ? a.order : 999
+                    const orderB = b.order !== undefined ? b.order : 999
+                    return orderA - orderB
+                })
+                setTearsheets(sorted)
             } catch (error) {
                 console.error('Error loading tearsheets:', error)
             } finally {
@@ -25,42 +32,51 @@ export default function Tearsheets() {
         fetchTearsheets()
     }, [])
 
-    // Preload images to prevent layout shift in CSS columns
+    // Track when first 6-7 images are loaded, then auto-load more
     useEffect(() => {
-        if (tearsheets.length === 0 || loading) return
+        if (tearsheets.length === 0 || loading || displayCount > 10) return
 
-        imagesLoadedCount.current = 0
-        setImagesLoaded(false)
+        const firstImages = tearsheets.slice(0, 7)
+        let loadedCount = 0
+        let hasTriggered = false
 
-        // Preload all images to get their actual dimensions before rendering
-        const imagePromises = tearsheets.map((tearsheet) => {
-            return new Promise((resolve) => {
-                const img = new window.Image()
-                img.onload = () => {
-                    imagesLoadedCount.current++
-                    // Update tearsheet with actual dimensions if not set
-                    if (!tearsheet.width || !tearsheet.height) {
-                        tearsheet.width = img.naturalWidth
-                        tearsheet.height = img.naturalHeight
-                    }
-                    if (imagesLoadedCount.current === tearsheets.length) {
-                        setImagesLoaded(true)
-                    }
-                    resolve()
+        firstImages.forEach((tearsheet) => {
+            const img = new window.Image()
+            img.onload = () => {
+                loadedCount++
+                // Once 6-7 images are loaded, automatically load more (only once)
+                if (loadedCount >= 6 && !hasTriggered && tearsheets.length > 10) {
+                    hasTriggered = true
+                    setDisplayCount(20)
                 }
-                img.onerror = () => {
-                    imagesLoadedCount.current++
-                    if (imagesLoadedCount.current === tearsheets.length) {
-                        setImagesLoaded(true)
-                    }
-                    resolve() // Resolve even on error to not block rendering
-                }
-                img.src = tearsheet.src
-            })
+            }
+            img.src = tearsheet.src
         })
+    }, [tearsheets, loading, displayCount])
 
-        Promise.all(imagePromises)
-    }, [tearsheets, loading])
+    // Intersection Observer for infinite scroll
+    useEffect(() => {
+        if (!loadMoreRef.current || loading) return
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && tearsheets.length > displayCount) {
+                    setDisplayCount(prev => prev + 10)
+                }
+            },
+            {
+                rootMargin: '200px', // Start loading 200px before reaching the bottom
+            }
+        )
+
+        observer.observe(loadMoreRef.current)
+
+        return () => {
+            if (loadMoreRef.current) {
+                observer.unobserve(loadMoreRef.current)
+            }
+        }
+    }, [loading, displayCount, tearsheets.length])
 
     const openFullscreen = (imageSrc) => {
         setFullscreenImage(imageSrc)
@@ -70,12 +86,10 @@ export default function Tearsheets() {
         setFullscreenImage(null)
     }
 
-    if (loading) {
-        return <LoadingSpinner />
-    }
+    const visibleTearsheets = tearsheets.slice(0, displayCount)
+    const hasMore = tearsheets.length > displayCount
 
-    // Show loading spinner while preloading images to prevent layout shift
-    if (!imagesLoaded && tearsheets.length > 0) {
+    if (loading) {
         return <LoadingSpinner />
     }
 
@@ -93,7 +107,7 @@ export default function Tearsheets() {
                 </div>
             </section>
 
-            {/* Tearsheets Gallery - CSS Columns Masonry */}
+            {/* Tearsheets Gallery - Grid Layout */}
             <section className="pb-12 md:pb-16 px-4 md:px-6 ">
                 <div className="max-w-[1600px] mx-auto md:mx-20">
                     {tearsheets.length === 0 ? (
@@ -101,11 +115,12 @@ export default function Tearsheets() {
                             No tearsheets found. Add tearsheets from the admin panel.
                         </div>
                     ) : (
-                        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-5 lg:gap-6">
-                            {tearsheets.map((tearsheet) => (
+                        <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
+                            {visibleTearsheets.map((tearsheet, index) => (
                             <div
                                 key={tearsheet.id}
-                                className="break-inside-avoid mb-4 md:mb-5 lg:mb-6 cursor-pointer group relative"
+                                className="cursor-pointer group relative"
                                 onClick={() => openFullscreen(tearsheet.src)}
                             >
                                 <div className="relative overflow-hidden rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-500 bg-white">
@@ -117,8 +132,8 @@ export default function Tearsheets() {
                                                 alt={tearsheet.alt || "Tearsheet"}
                                                 width={tearsheet.width || 600}
                                                 height={tearsheet.height || 800}
-                                                loading="eager"
-                                                priority={tearsheets.indexOf(tearsheet) < 6}
+                                                loading={index < 6 ? "eager" : "lazy"}
+                                                priority={index < 6}
                                                 className="w-full h-auto transition-all duration-700 ease-out group-hover:scale-105"
                                             />
                                             {/* Subtle overlay on hover */}
@@ -160,6 +175,11 @@ export default function Tearsheets() {
                             </div>
                             ))}
                         </div>
+                        {/* Sentinel element for infinite scroll */}
+                        {hasMore && (
+                            <div ref={loadMoreRef} className="h-20" />
+                        )}
+                        </>
                     )}
                 </div>
             </section>
