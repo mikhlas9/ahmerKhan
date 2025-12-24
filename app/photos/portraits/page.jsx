@@ -25,12 +25,8 @@ export default function PhotosPortraits() {
     fetchPortraits()
   }, [])
 
-  if (loading) {
-    return <LoadingSpinner text="Loading" />
-  }
-
   // Convert portraits data to images format
-  const images = portraits.map(item => ({
+  const images = loading ? [] : portraits.map(item => ({
     src: item.src || "",
     alt: item.alt || "Portrait",
     caption: item.caption || "",
@@ -90,6 +86,34 @@ export default function PhotosPortraits() {
     // Reset touch values
     setTouchStart(null)
     setTouchEnd(null)
+  }
+
+  // Keyboard navigation handlers
+  useEffect(() => {
+    if (fullscreenIndex === null) return
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goToPreviousImage()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goToNextImage()
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        closeFullscreen()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullscreenIndex])
+
+  if (loading) {
+    return <LoadingSpinner text="Loading" />
   }
 
   return (

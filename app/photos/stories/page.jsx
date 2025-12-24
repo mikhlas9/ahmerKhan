@@ -174,6 +174,30 @@ export default function Stories() {
     setTouchEnd(null)
   }
 
+  // Keyboard navigation handlers
+  useEffect(() => {
+    if (!fullscreenData) return
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goToPreviousImage()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goToNextImage()
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        closeFullscreen()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullscreenData])
+
   if (loading) {
     return <LoadingSpinner text="Loading" />
   }

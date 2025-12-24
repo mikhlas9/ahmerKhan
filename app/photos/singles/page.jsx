@@ -25,12 +25,8 @@ export default function Singles() {
     fetchSingles()
   }, [])
 
-  if (loading) {
-    return <LoadingSpinner text="Loading" />
-  }
-
   // Convert singles data to images format
-  const images = singles.map(item => ({
+  const images = loading ? [] : singles.map(item => ({
     src: item.src || "",
     alt: item.alt || "Single",
     caption: item.caption || "",
@@ -90,6 +86,34 @@ export default function Singles() {
     // Reset touch values
     setTouchStart(null)
     setTouchEnd(null)
+  }
+
+  // Keyboard navigation handlers
+  useEffect(() => {
+    if (fullscreenIndex === null) return
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goToPreviousImage()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goToNextImage()
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        closeFullscreen()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullscreenIndex])
+
+  if (loading) {
+    return <LoadingSpinner text="Loading" />
   }
 
   return (
