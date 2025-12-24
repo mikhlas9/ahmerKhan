@@ -8,6 +8,8 @@ export default function Singles() {
   const [fullscreenIndex, setFullscreenIndex] = useState(null)
   const [singles, setSingles] = useState([])
   const [loading, setLoading] = useState(true)
+  const [touchStart, setTouchStart] = useState(null)
+  const [touchEnd, setTouchEnd] = useState(null)
 
   useEffect(() => {
     async function fetchSingles() {
@@ -55,6 +57,39 @@ export default function Singles() {
     if (fullscreenIndex === null) return
     const newIndex = fullscreenIndex === images.length - 1 ? 0 : fullscreenIndex + 1
     setFullscreenIndex(newIndex)
+  }
+
+  // Swipe gesture handlers for mobile
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e) => {
+    e.stopPropagation()
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e) => {
+    e.stopPropagation()
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = (e) => {
+    e.stopPropagation()
+    if (!touchStart || !touchEnd || fullscreenIndex === null) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe) {
+      goToNextImage()
+    }
+    if (isRightSwipe) {
+      goToPreviousImage()
+    }
+    
+    // Reset touch values
+    setTouchStart(null)
+    setTouchEnd(null)
   }
 
   return (
@@ -145,15 +180,20 @@ export default function Singles() {
           </button>
 
           {/* Main Image Container with Navigation */}
-          <div className="relative w-full h-full flex items-center justify-center">
-            {/* Left Navigation */}
+          <div 
+            className="relative w-full h-full flex items-center justify-center"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
+            {/* Left Navigation - Hidden on mobile */}
             {images.length > 1 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   goToPreviousImage()
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
+                className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
                 aria-label="Previous image"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,14 +221,14 @@ export default function Singles() {
               )}
             </div>
 
-            {/* Right Navigation */}
+            {/* Right Navigation - Hidden on mobile */}
             {images.length > 1 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   goToNextImage()
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
+                className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer"
                 aria-label="Next image"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

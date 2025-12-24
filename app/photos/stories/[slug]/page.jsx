@@ -324,8 +324,8 @@ export default function StorySlugPage() {
                 }}
                 className={`relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
                   index === fullscreenData.currentIndex
-                    ? 'border-gray-900 ring-2 ring-gray-900'
-                    : 'border-gray-300 hover:border-gray-600'
+                    ? 'border-black'
+                    : 'border-gray-200 hover:border-gray-400'
                 }`}
               >
                 <Image
