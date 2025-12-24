@@ -62,21 +62,10 @@ export default function Stories() {
     const story = validStories[storyIndex]
     if (!story) return
     
-    const storyImages = getStoryImages(storyIndex)
     const slug = generateSlug(story.heading)
     
-    setIsOpening(true)
-    setFullscreenData({
-      currentIndex: imageIndex >= 0 && imageIndex < storyImages.length ? imageIndex : 0,
-      allImages: storyImages,
-      storyHeading: story.heading
-    })
-    
-    // Update URL to story slug page
+    // Navigate directly to slug page without showing modal here
     router.push(`/photos/stories/${slug}`)
-    
-    // Reset opening state after animation
-    setTimeout(() => setIsOpening(false), 300)
   }
 
   const closeFullscreen = () => {

@@ -38,8 +38,8 @@ export default function Footer() {
     fetchData()
   }, [])
 
-  // Hide footer on contact page
-  if (pathname === '/contact') {
+  // Hide footer on contact page and story slug pages
+  if (pathname === '/contact' || (pathname.startsWith('/photos/stories/') && pathname !== '/photos/stories')) {
     return null
   }
 
