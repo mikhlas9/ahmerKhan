@@ -51,9 +51,9 @@ export default function Navbar() {
                 <h1 className="text-2xl md:text-2xl lg:text-4xl text-gray-700 text-black tracking-wider leading-tight text-center">
                   {name}
                 </h1>
-                <p className="text-[9px] md:text-[10px] lg:text-sm text-gray-500 mt-1 font-normal leading-tight text-center">
+                {/* <p className="text-[9px] md:text-[10px] lg:text-sm text-gray-500 mt-1 font-normal leading-tight text-center">
                   {title}
-                </p>
+                </p> */}
               </Link>
             </div>
 
