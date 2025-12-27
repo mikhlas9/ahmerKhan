@@ -85,9 +85,9 @@ export default function StorySlugPage() {
   const closeFullscreen = () => {
     setIsClosing(true)
     setTimeout(() => {
-      setFullscreenData(null)
+    setFullscreenData(null)
       setIsClosing(false)
-      router.push('/photos/stories')
+    router.push('/photos/stories')
     }, 300) // Match transition duration
   }
 
@@ -121,10 +121,10 @@ export default function StorySlugPage() {
     if (!fullscreenData) return
     setImageChanging(true)
     setTimeout(() => {
-      const newIndex = fullscreenData.currentIndex === 0 
-        ? fullscreenData.allImages.length - 1 
-        : fullscreenData.currentIndex - 1
-      setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+    const newIndex = fullscreenData.currentIndex === 0 
+      ? fullscreenData.allImages.length - 1 
+      : fullscreenData.currentIndex - 1
+    setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
       setTimeout(() => setImageChanging(false), 50)
     }, 150)
   }
@@ -133,10 +133,10 @@ export default function StorySlugPage() {
     if (!fullscreenData) return
     setImageChanging(true)
     setTimeout(() => {
-      const newIndex = fullscreenData.currentIndex === fullscreenData.allImages.length - 1 
-        ? 0 
-        : fullscreenData.currentIndex + 1
-      setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+    const newIndex = fullscreenData.currentIndex === fullscreenData.allImages.length - 1 
+      ? 0 
+      : fullscreenData.currentIndex + 1
+    setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
       setTimeout(() => setImageChanging(false), 50)
     }, 150)
   }
@@ -146,7 +146,7 @@ export default function StorySlugPage() {
     if (index === fullscreenData.currentIndex) return
     setImageChanging(true)
     setTimeout(() => {
-      setFullscreenData({ ...fullscreenData, currentIndex: index })
+    setFullscreenData({ ...fullscreenData, currentIndex: index })
       setTimeout(() => setImageChanging(false), 50)
     }, 150)
   }

@@ -71,10 +71,10 @@ export default function Stories() {
   const closeFullscreen = () => {
     setIsClosing(true)
     setTimeout(() => {
-      setFullscreenData(null)
+    setFullscreenData(null)
       setIsClosing(false)
-      // Reset URL to base stories page
-      router.push('/photos/stories')
+    // Reset URL to base stories page
+    router.push('/photos/stories')
     }, 300) // Match transition duration
   }
 
@@ -111,10 +111,10 @@ export default function Stories() {
     if (!fullscreenData) return
     setImageChanging(true)
     setTimeout(() => {
-      const newIndex = fullscreenData.currentIndex === 0 
-        ? fullscreenData.allImages.length - 1 
-        : fullscreenData.currentIndex - 1
-      setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+    const newIndex = fullscreenData.currentIndex === 0 
+      ? fullscreenData.allImages.length - 1 
+      : fullscreenData.currentIndex - 1
+    setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
       setTimeout(() => setImageChanging(false), 50)
     }, 150)
   }
@@ -123,10 +123,10 @@ export default function Stories() {
     if (!fullscreenData) return
     setImageChanging(true)
     setTimeout(() => {
-      const newIndex = fullscreenData.currentIndex === fullscreenData.allImages.length - 1 
-        ? 0 
-        : fullscreenData.currentIndex + 1
-      setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
+    const newIndex = fullscreenData.currentIndex === fullscreenData.allImages.length - 1 
+      ? 0 
+      : fullscreenData.currentIndex + 1
+    setFullscreenData({ ...fullscreenData, currentIndex: newIndex })
       setTimeout(() => setImageChanging(false), 50)
     }, 150)
   }
@@ -136,7 +136,7 @@ export default function Stories() {
     if (index === fullscreenData.currentIndex) return
     setImageChanging(true)
     setTimeout(() => {
-      setFullscreenData({ ...fullscreenData, currentIndex: index })
+    setFullscreenData({ ...fullscreenData, currentIndex: index })
       setTimeout(() => setImageChanging(false), 50)
     }, 150)
   }
@@ -223,7 +223,7 @@ export default function Stories() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
               {validStories.map((story, storyIndex) => {
-                return (
+            return (
                   <div
                     key={storyIndex}
                     className="bg-white rounded-lg overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300 cursor-pointer group"
@@ -232,12 +232,12 @@ export default function Stories() {
                     {/* Story Image Preview - First image only */}
                     <div className="relative w-full aspect-[4/3] bg-gray-900 overflow-hidden">
                       {story.images && story.images.length > 0 && (
-                        <Image
+                      <Image
                           src={story.images[0]}
                           alt={story.heading}
-                          fill
-                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                        />
+                        fill
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
                       )}
                       {/* Fullscreen Icon on Hover */}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 ease-out flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -257,21 +257,21 @@ export default function Stories() {
                           </svg>
                         </div>
                       </div>
-                    </div>
+                </div>
 
                     {/* Text Content Box */}
                     <div className="p-4 md:p-5 space-y-2.5">
                       <h3 className="text-sm md:text-base font-medium text-gray-800 leading-[1.5]">
-                        {story.heading}
+                    {story.heading}
                       </h3>
                       {story.paragraph && (
                         <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
-                          {story.paragraph}
-                        </p>
+                    {story.paragraph}
+                  </p>
                       )}
                     </div>
-                  </div>
-                )
+                </div>
+            )
               })}
             </div>
           )}

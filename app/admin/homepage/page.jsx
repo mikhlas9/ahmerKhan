@@ -26,7 +26,7 @@ function HomepageAdmin() {
         if (data) {
           // Support both old and new data structure for backward compatibility
           if (data.desktopVideoUrl !== undefined || data.mobileImages !== undefined) {
-            setFormData({
+          setFormData({
               desktopVideoUrl: data.desktopVideoUrl || "",
               mobileImages: data.mobileImages && data.mobileImages.length > 0 
                 ? data.mobileImages 
@@ -41,7 +41,7 @@ function HomepageAdmin() {
             setFormData({
               desktopVideoUrl,
               mobileImages
-            })
+          })
           }
         } else {
           // Initialize with default
@@ -177,7 +177,7 @@ function HomepageAdmin() {
           </div>
 
           {/* Mobile Images Upload */}
-          <div>
+            <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Mobile Images (3-4 images)</h2>
               {formData.mobileImages.length < 4 && (
@@ -207,16 +207,16 @@ function HomepageAdmin() {
                       </button>
                     )}
                   </div>
-                  <ImageUpload
+              <ImageUpload
                     value={imageUrl}
                     onChange={(url) => handleMobileImageChange(index, url)}
-                    folder="homepage"
+                folder="homepage"
                     label=""
                     placeholder="/images/home-mobile.jpg"
                     id={`mobile-image-${index}`}
-                    onUploadingChange={setUploading}
-                  />
-                </div>
+                onUploadingChange={setUploading}
+              />
+            </div>
               ))}
             </div>
             <p className="text-xs text-gray-500 mt-2">
