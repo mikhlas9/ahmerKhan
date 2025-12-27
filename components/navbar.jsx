@@ -35,6 +35,7 @@ export default function Navbar() {
     { name: 'STORIES', href: '/photos/stories' },
     { name: 'SINGLES', href: '/photos/singles' },
     { name: 'PORTRAITS', href: '/photos/portraits' },
+    { name: 'MONOCHROME', href: '/photos/monochrome' },
   ];
 
   const name = aboutData?.name || 'AHMER KHAN';
